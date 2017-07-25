@@ -5,9 +5,10 @@
   "main": "index.js",
   "dependencies": {
     "bootstrap": "^3.3.7",
+    "bootstrap-fileinput": "^4.4.2",
     "bootstrap-validator": "^0.11.9",
-    "jquery.cookie": "^1.4.1",
-    "jquery": "^3.2.1"
+    "jquery": "^3.2.1",
+    "jquery.cookie": "^1.4.1"
   },
   "devDependencies": {},
   "scripts": {

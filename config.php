@@ -16,4 +16,5 @@ class Config {
             )
         )
     );
+    public static $uploadRoot = "/upload";
 }

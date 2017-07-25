@@ -1,13 +1,14 @@
 $(document).ready(function() {
-
+	
   $('#iUserName').val($.cookie('userName'));
   if($('#iUserName').val() != '') {
     $('#iPassword').focus();
   }
-  // if($.cookie('loggedInUser') != '') {
-  //   $('#loginFormDiv').addClass('hidden');
-  //   $('#mainFormDiv').removeClass('hidden').addClass('container');
-  // }
+  if($.cookie('loggedInUser') != undefined) {
+    $('#loginFormDiv').addClass('hidden');
+    $('#mainFormDiv').removeClass('hidden').addClass('container');
+    $('#loggedInUserNameId').text($.cookie('loggedInUser'));
+  }
   // process the form
   $('#loginForm').submit(function(event) {
 
