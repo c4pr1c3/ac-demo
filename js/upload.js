@@ -7,7 +7,8 @@ $("#uploadFiles").fileinput({
 		showUpload: true,
 		minFileCount: 1,
 		maxFileCount: 5,
-		mainClass: "input-group-lg"
+		mainClass: "input-group-lg",
+//        maxFileSize: "10240" // float, the maximum file size for upload in KB. If greater than this, a validation error is thrown using the msgSizeTooLarge setting. If set to 0, it means size allowed is unlimited. Defaults to 0.
 });
 $('#uploadFiles').on('filepreajax', function(event, previewId, index) {
     console.log('File pre ajax triggered');

@@ -8,7 +8,7 @@
 
   <!-- Bootstrap -->
   <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="node_modules/bootstrap-fileinput/css/fileinput.min.css">
+  <link rel="stylesheet" href="node_modules/bootstrap-table/dist/bootstrap-table.min.css">
 
   <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
   <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -19,36 +19,18 @@
 </head>
 
 <body>
-  <div id="loginFormDiv" class="container">
-    <form id="loginForm">
-      <h1>中传放心传</h1>
-      <div class="form-group">
-        <div class="form-group">
-          <label for="iUserName"></label>
-          <input type="email" class="form-control" id="iUserName" name="userName" placeholder="请输入用户名" autofocus required maxlength="128">
-        </div>
-        <div class="form-group">
-          <label for="iPassword"></label>
-          <input type="password" class="form-control" name="password" id="iPassword" placeholder="请输入登录口令">
-          <p id="login2prompt" class="help-block"></p>
-        </div>
-        <button type="submit" class="btn btn-primary btn-lg" name="login">登录</button>
-        <a class="btn btn-link btn-lg" href="register.php" role="button">注册</a>
-      </div>
-    </form>
-  </div>
-
-  <div id="mainFormDiv" class="hidden">
+  <div id="mainFormDiv" class="container">
     <nav class="navbar navbar-default">
       <div class="container-fluid">
         <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
           <a class="navbar-brand" href="index.html">中传放心传</a>
-						<ul class="nav navbar-nav">
-              <li class="active"><a href="index.html">上传文件</a></li>
-              <li><a href="list.html">文件列表</a></li>
+            <ul class="nav navbar-nav">
+              <li><a href="index.html">上传文件</a></li>
+              <li class="active"><a href="list.html">文件列表</a></li>
             </ul>
         </div>
+
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
           <ul class="nav navbar-nav navbar-right">
@@ -63,11 +45,27 @@
         </div><!-- /.navbar-collapse -->
       </div><!-- /.container-fluid -->
     </nav>
-    <!--  文件上传表单 -->
-      <label class="control-label">上传文件到云盘</label>
-      <input id="uploadFiles" name="cucFiles[]" type="file" multiple class="file file-loading" data-allowed-file-extensions='["doc", "docx", "xls", "xlsx", "ppt", "pptx", "zip", "pdf"]'>
-      <p class="help-block">请选择10MB以下大小的文件，一次最多上传5个文件</p>
 
+    <!--  文件列表页面 -->
+    <table id="files-table" 
+      data-toggle="table" 
+      data-side-pagination="server"
+      data-url="/list.php"
+      data-height="600"
+      data-side-pagination="server"
+      data-pagination="true"
+      data-page-list="[3, 5, 10]"
+      data-search="true">
+      <thead>
+        <tr>
+          <th data-field="id">ID</th>
+          <th data-field="name">文件名</th>
+          <th data-field="sha256">Sha256</th>
+          <th data-field="create_time">上传时间</th>
+          <th data-field="size">文件大小</th>
+        </tr>
+      </thead>
+    </table>
   </div>
 
 
@@ -75,10 +73,9 @@
   <script src="node_modules/jquery.cookie/jquery.cookie.js" charset="utf-8"></script>
   <!-- Include all compiled plugins (below), or include individual files as needed -->
   <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
-  <script src="node_modules/bootstrap-fileinput/js/fileinput.min.js"></script>
-  <script src="node_modules/bootstrap-fileinput/js/locales/zh.js"></script>
-  <script src="js/login.js"></script>
-  <script src="js/upload.js"></script>
+  <script src="node_modules/bootstrap-table/dist/bootstrap-table.min.js"></script>
+  <script src="node_modules/bootstrap-table/dist/locale/bootstrap-table-zh-CN.min.js"></script>
+  <script src="js/list.js"></script>
 </body>
 
 </html>

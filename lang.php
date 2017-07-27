@@ -10,6 +10,16 @@ class Prompt {
         'password_not_same' => '两次输入的口令不一致',
         'login_failed' => '登录失败，用户名和密码不匹配',
         'login_ok' => '登录成功',
-        'db_oops' => '数据库服务器未知错误，请稍后重试'
+        'db_oops' => '数据库服务器未知错误，请稍后重试',
+        'upload_enc_failed' => '文件上传加密失败',
+        'upload_mkdir_failed' => '文件上传目录创建失败'
+    );
+    public static $uploadErr = array(
+        UPLOAD_ERR_INI_SIZE => '上传的文件超过了10MB',
+        UPLOAD_ERR_FORM_SIZE => '上传文件的大小超过了 HTML 表单中 MAX_FILE_SIZE 选项指定的值',
+        UPLOAD_ERR_PARTIAL => '文件只有部分被上传',
+        UPLOAD_ERR_NO_FILE => '没有文件被上传',
+        UPLOAD_ERR_NO_TMP_DIR => '找不到临时文件夹来保存上传的文件',
+        UPLOAD_ERR_CANT_WRITE => '文件写入失败'
     );
 }

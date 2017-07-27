@@ -35,6 +35,7 @@ $(document).ready(function() {
         if(data['has-warning'] == false) {
           $('#loginFormDiv').addClass('hidden');
           $('#mainFormDiv').removeClass('hidden').addClass('container');
+          $('#loggedInUserNameId').text($('#iUserName').val());
         } else {
           $('#loginFormDiv').addClass('has-warning');
           $('#login2prompt').text(data['msg']);

@@ -1,5 +1,24 @@
 <?php
 
+require_once 'config.php';
+
+function debug_log($msg, $file = '', $line = '', $output = '') {
+    if(!is_file($output)) {
+        $output = Config::$debugLogFile;
+    }
+
+    $formatedMsg = date('Y-m-d H:i:s');
+    if(!empty($file)) {
+        $formatedMsg  = sprintf("%s %s", $formatedMsg, $file);
+    }
+    if(!empty($line)) {
+        $formatedMsg  = sprintf("%s %d", $formatedMsg, $line);
+    }
+    $formatedMsg = sprintf("%s - %s\n", $formatedMsg, $msg);
+
+    file_put_contents($output, $formatedMsg, FILE_APPEND);
+}
+
 function getPubAndPrivKeys($userName, $password) {
   // 以下是最终使用的公钥证书中可以被查看的Distinguished Name（简称：DN）信息
 $dn = array(
@@ -27,7 +46,6 @@ $privkey = openssl_pkey_new($pk_config);
 // openssl x509 -in server.key -text -noout
 // 给服务器安装使用的证书一般不使用口令保护，避免每次重启服务器时需要人工输入口令
 openssl_pkey_export($privkey, $pkeyout, $password);
-openssl_pkey_export($privkey, $pkeyout);
 
 // 制作CSR文件：Certificate Signing Request
 // 等价openssl命令
@@ -62,3 +80,49 @@ return array(
 );
 
 }
+
+
+function encryptFile($input_file, $enc_key, $filename) {
+    if(!is_file($input_file)) {
+        return false;
+    }
+
+    $plaintext = file_get_contents($input_file); // FIXME 对于大文件的加密，这种一次性读取明文的方式对内存的压力太大，应分片读取
+    $method = "aes-256-cbc"; // print_r(openssl_get_cipher_methods());
+    $enc_options = 0;
+    $iv_length = openssl_cipher_iv_length($method);
+    $iv = openssl_random_pseudo_bytes($iv_length);
+
+    $ciphertext = openssl_encrypt($plaintext, $method, $enc_key, $enc_options, $iv);
+
+    // 定义我们“私有”的密文结构
+    $saved_ciphertext = sprintf('%s$%d$%s$%s$%s', $method, $enc_options, bin2hex($iv), $filename, $ciphertext);
+
+    file_put_contents('/tmp/files.log', __LINE__ . json_encode($saved_ciphertext) . PHP_EOL, FILE_APPEND);
+
+    return $saved_ciphertext;
+}
+
+function decryptFile($saved_ciphertext, $enc_key) {
+    // 检查密文格式是否正确、符合我们的定义
+    if(preg_match('/.*$.*$.*$.*$.*/', $saved_ciphertext) !== 1) {
+        return false;
+    }
+
+    // 解析密文结构，提取解密所需各个字段
+    //list($extracted_method, $extracted_enc_options, $extracted_iv, $extracted_filename, $extracted_ciphertext) = explode('$', $saved_ciphertext); 
+    $decryptedArr = explode('$', $saved_ciphertext); 
+
+    return openssl_decrypt($decryptedArr[4], $decryptedArr[0], $enc_key, $decryptedArr[1], hex2bin($decryptedArr[2]));
+
+}
+
+function getPagination($number, $pageSize) {
+
+    $start = ($number - 1) * $pageSize;
+
+    return $start;
+}
+
+
+
