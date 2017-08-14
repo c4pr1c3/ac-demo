@@ -54,3 +54,29 @@ $(document).ready(function() {
     }
 
 });
+
+function ajaxDelete(key) {
+
+	if(!confirm('确认删除？')) {
+		return;
+	}
+
+    // data you may need
+    console.log(key);
+
+    $.ajax({
+        type: "POST",
+        url: "delete.php",
+        data: { 'key': key },
+// You are expected to receive the generated JSON (json_encode($data))
+        dataType: "json",
+        success: function (data) {
+			console.log(data);
+		},
+        error: function (er) {
+			console.log(er);
+        }
+    });
+}
+
+

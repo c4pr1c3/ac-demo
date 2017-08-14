@@ -8,7 +8,7 @@ $("#uploadFiles").fileinput({
 		minFileCount: 1,
 		maxFileCount: 5,
 		mainClass: "input-group-lg",
-//        maxFileSize: "10240" // float, the maximum file size for upload in KB. If greater than this, a validation error is thrown using the msgSizeTooLarge setting. If set to 0, it means size allowed is unlimited. Defaults to 0.
+        maxFileSize: "10240" // float, the maximum file size for upload in KB. If greater than this, a validation error is thrown using the msgSizeTooLarge setting. If set to 0, it means size allowed is unlimited. Defaults to 0.
 });
 $('#uploadFiles').on('filepreajax', function(event, previewId, index) {
     console.log('File pre ajax triggered');
@@ -25,4 +25,5 @@ $('#uploadFiles').on('fileuploaded', function(event, data, previewId, index) {
     response = data.response, reader = data.reader;
     console.log('File uploaded triggered');
 });
+
 

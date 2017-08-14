@@ -1,9 +1,9 @@
 <?php
 
-require 'utils.php';
-require 'db.php';
-require 'lang.php';
-require 'config.php';
+require_once 'utils.php';
+require_once 'db.php';
+require_once 'lang.php';
+require_once 'config.php';
 
 function setupPageLayout($req_method, &$pageLayout)
 {

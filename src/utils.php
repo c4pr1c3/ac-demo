@@ -56,7 +56,7 @@ $csr = openssl_csr_new($dn, $privkey, $pk_config);
 
 // 对CSR文件进行自签名（第2个参数设置为null，否则可以设置为CA的证书路径），设置证书有效期：365天
 // FIXME 证书有效期根据产品设计需要，可能需要保存到数据库中，定期更换用户的公私钥对
-// TODO 如果用户的公私钥对支持定期更换，则历史加密文件在每次用户个人公私钥更换时需要先用历史秘钥解密一次
+// TODO 如果用户的公私钥对支持定期更换，则历史加密文件的对称加密秘钥在每次用户个人公私钥更换时需要先用历史秘钥解密一次
 // 再用新秘钥重新加密后保存
 $sscert = openssl_csr_sign($csr, null, $privkey, 365, $pk_config);
 // 以上所有代码的等价单行openssl命令
@@ -98,8 +98,6 @@ function encryptFile($input_file, $enc_key, $filename) {
     // 定义我们“私有”的密文结构
     $saved_ciphertext = sprintf('%s$%d$%s$%s$%s', $method, $enc_options, bin2hex($iv), $filename, $ciphertext);
 
-    file_put_contents('/tmp/files.log', __LINE__ . json_encode($saved_ciphertext) . PHP_EOL, FILE_APPEND);
-
     return $saved_ciphertext;
 }
 
@@ -124,5 +122,11 @@ function getPagination($number, $pageSize) {
     return $start;
 }
 
+function getUploadFilePath($uid, $sha256, $create_time) {
+    $date = date_format(date_create($create_time), 'Y/m/d');
+    $uploaddir = sprintf("%s/%s/%s", Config::$uploadRoot, $uid, $date);
+    $uploadfile = sprintf("%s/%s.enc", $uploaddir, $sha256);
 
+    return $uploadfile;
+}
 

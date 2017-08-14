@@ -32,7 +32,24 @@ function doFileUpload() {
         $basename = $uploadFilePathParts['filename'];
         $extname = $uploadFilePathParts['extension'];
         $sha256 = hash_file('sha256', $files['tmp_name'][$i]); // FIXME 上传后保存的加密文件名
-        $delApiUrl = ''; // FIXME 添加服务端的文件删除API
+        $delApiUrl = 'delete.php'; // FIXME 添加服务端的文件删除API
+
+        try {
+            $dup = findDuplicateFileInDb($sha256);
+            debug_log($dup, __FILE__, __LINE__);
+            if($dup > 0) {
+                $ret = [
+                    'error' => Prompt::$msg['duplicate_file']
+                ];
+                return $ret;
+            }
+        } catch(PDOException $e) {
+            $ret = [
+                'error' => Prompt::$msg['db_oops']
+            ];
+            return $ret;
+        }
+
 
         // TODO 文件加密
         // 密文结构： $加密算法$enc_options$IV$原始文件名$密文
@@ -53,8 +70,8 @@ function doFileUpload() {
         // 构造文件保存路径
         $uid = $_SESSION['uid'];
         $datetime = date('Y-m-d H:i:s');
-        $date = date_format(date_create($datetime), 'Y/m/d');
-        $uploaddir = sprintf("%s/%s/%s", Config::$uploadRoot, $uid, $date);
+        $uploadfile = getUploadFilePath($uid, $sha256, $datetime);
+        $uploaddir = dirname($uploadfile);
         if(!is_dir($uploaddir)) {
             if(!mkdir($uploaddir, 0755, true)) {
                 // 加密失败处理
@@ -64,13 +81,11 @@ function doFileUpload() {
                 return $ret;
             }
         }
-        $uploadfile = sprintf("%s/%s.enc", $uploaddir, $sha256);
+        debug_log($uploadfile, __FILE__, __LINE__);
 
         // 清理文件名中可能会包含的$
         $filename = base64_encode($files['name'][$i]);
         $encryptedFile = encryptFile($files['tmp_name'][$i], $enc_key, $filename);
-
-        debug_log($uploadfile, __FILE__, __LINE__);
 
         if($encryptedFile !== false) {
             if(file_put_contents($uploadfile, $encryptedFile) !== false) {
@@ -103,7 +118,7 @@ function doFileUpload() {
         }
 
         $p1[$i] = ''; // FIXME 文件下载地址
-        $p2[$i] = ['caption' => sprintf('%s.%s', $basename, $extname), 'size' => filesize($files['tmp_name'][$i]), 'width' => '120px', 'key' => $sha256];
+        $p2[$i] = ['caption' => sprintf('%s.%s', $basename, $extname), 'size' => filesize($files['tmp_name'][$i]), 'width' => '120px', 'key' => $sha256, 'url' => $delApiUrl,];
 
         $ret = [
             'initialPreview' => $p1, 

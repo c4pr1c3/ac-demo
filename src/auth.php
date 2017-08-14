@@ -25,5 +25,6 @@ window.top.location.href = "/index.html";
 EOF;
 
     echo $logout_html;
+    exit();
 }
 

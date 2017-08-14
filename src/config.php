@@ -19,7 +19,9 @@ class Config {
     public static $uploadRoot = "/var/www/upload";
     public static $debugLogFile = '/tmp/cucCloudPan.log';
     public static $symmetricEncKeyLen = 32;
+    public static $asymmetricEncKeyLen = 32;
     public static $sessionTimeout = 60 * 10; // 10分钟没有活动就自动登出
     public static $pageSize = 3;
     public static $visiblePages = 5;
+    public static $shaKeyRule = '/^[0-9a-z]{64,64}$/';
 }

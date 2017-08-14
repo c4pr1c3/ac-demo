@@ -22,7 +22,7 @@
 
 <?php
 session_start();
-require 'register.bo.php';
+require_once 'register.bo.php';
 
 // 根据客户端请求类型是GET还是POST，分别设置页面中不同div是否可见
 setupPageLayout($_SERVER['REQUEST_METHOD'], $pageLayout);
