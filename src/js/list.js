@@ -46,7 +46,7 @@ $(document).ready(function() {
     // ajax get files list
 
 	$(function () {
-		$('#files-table').bootstrapTable('load', {total: 5, rows: data});
+		$('#files-table').bootstrapTable('load', {total: 5, rows: ''});
 	});
 
     if($.cookie('loggedInUser') != undefined) {
@@ -55,7 +55,13 @@ $(document).ready(function() {
 
 });
 
-function ajaxDelete(key) {
+function ajaxDelete(obj) {
+
+	tr = $(obj.parentNode.parentNode);
+	console.log(tr);
+
+	key = tr[0].childNodes[5].innerText;
+	filename = tr.find('td a')[0].innerText;
 
 	if(!confirm('确认删除？')) {
 		return;
@@ -71,9 +77,25 @@ function ajaxDelete(key) {
 // You are expected to receive the generated JSON (json_encode($data))
         dataType: "json",
         success: function (data) {
+			if(data['error']) {
+				$('#delTooltip').text(filename + " 删除失败 ").addClass('alert alert-danger');
+			} else {
+				tr.fadeOut(2000);
+				$('#delTooltip').text(filename + " 已删除 ").addClass('alert alert-success');
+			}
+
+			$("#delTooltip").fadeTo(2000, 500).slideUp(500, function(){
+				$("#delTooltip").slideUp(500);
+				$("#delTooltip").removeClass('alert-danger alert-success');
+			});
 			console.log(data);
 		},
         error: function (er) {
+			$('#delTooltip').text(filename + " 删除失败 ").addClass('alert alert-danger');
+			$("#delTooltip").fadeTo(2000, 500).slideUp(500, function(){
+				$("#delTooltip").slideUp(500);
+				$("#delTooltip").removeClass('alert-danger alert-success');
+			});
 			console.log(er);
         }
     });

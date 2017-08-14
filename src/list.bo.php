@@ -12,7 +12,7 @@ function listFiles($uid, $offset, $limit, $search = '') {
       // pack name with href
       foreach($content as $key => $row) {
         $content[$key]['name'] = '<a href="download.php?id=' . $row['id'] . '">' . $row['name'] . '</a>';
-        $content[$key]['del'] = '<a href="#" onclick="ajaxDelete(\'' . $row['sha256'] . '\');">删除</a>';
+        $content[$key]['del'] = '<a href="#" onclick="ajaxDelete(this);">删除</a>';
       }
     } else {
       $content = array();
