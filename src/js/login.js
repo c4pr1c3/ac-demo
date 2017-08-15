@@ -1,3 +1,34 @@
+function showUploadForm() {
+    $('#loginFormDiv').addClass('hidden');
+    $('#mainFormDiv').removeClass('hidden').addClass('container');
+    $('#loggedInUserNameId').text($.cookie('loggedInUser'));
+}
+
+
+function checkLogin() {
+    var req = $.ajax({ // 检查当前登录用户会话的有效性
+        type: 'GET',
+        url: '/auth.php',
+        dataType: 'json', 
+        encode: true
+    });
+
+    req.done(function(data) {
+        if(data.error && data.error == 'login') {
+            console.log('login needed');
+            $.cookie('loggedInUser', null);
+        } else {
+            showUploadForm();
+        }
+    });
+
+    req.fail(function(data) {
+        if(data.status == 200) {
+            showUploadForm();
+        }
+    });
+}
+
 $(document).ready(function() {
     if($.cookie('userName') != undefined) {
         $('#iUserName').val($.cookie('userName'));
@@ -6,9 +37,7 @@ $(document).ready(function() {
         $('#iPassword').focus();
     }
     if($.cookie('loggedInUser') != undefined) {
-        $('#loginFormDiv').addClass('hidden');
-        $('#mainFormDiv').removeClass('hidden').addClass('container');
-        $('#loggedInUserNameId').text($.cookie('loggedInUser'));
+        checkLogin();
     }
 
     // process the form
@@ -51,9 +80,6 @@ $(document).ready(function() {
     });
 
     setInterval(function() {
-        $.ajax({
-            type: 'GET',
-            url: '/auth.php'
-        });
-    }, 60000 * 10); // 10分钟一次，保持心跳
+        checkLogin();
+    }, 10 * 60 * 1000); // 10分钟一次，保持心跳
 });

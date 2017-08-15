@@ -130,3 +130,12 @@ function getUploadFilePath($uid, $sha256, $create_time) {
     return $uploadfile;
 }
 
+function getMasterKey(&$masterKey) {
+    $masterKey = getenv('AC_SHARE_MASTER_KEY');
+    if(empty($masterKey)) {
+        return false;
+    }
+
+    return true;
+}
+

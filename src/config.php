@@ -24,4 +24,7 @@ class Config {
     public static $pageSize = 3;
     public static $visiblePages = 5;
     public static $shaKeyRule = '/^[0-9a-z]{64,64}$/';
+    public static $dftAllowedDldCount = 499;
+    public static $dftDldExpHours = 1;
+    public static $shareHashHmacAlgo = 'sha256';
 }

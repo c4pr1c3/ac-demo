@@ -2,6 +2,14 @@
 
 require 'config.php';
 
+function isAjaxRequest() {
+    if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') { // handle AJAX redirect
+        return true;
+    }
+
+    return false;
+}
+
 session_start();
 
 $now = time();
@@ -13,21 +21,24 @@ if (isset($_SESSION['discard_after']) && $now > $_SESSION['discard_after']) {
     session_start();
 
     setcookie('loggedInUser', NULL);
-    setcookie('userName', NULL);
 }
 
 $_SESSION['discard_after'] = $now + Config::$sessionTimeout;
 
 if(!isset($_SESSION['loggedInUser'])) {
-    header('Location: /index.html');
+    if(isAjaxRequest()) {
+        $ret = json_encode(array('error' => 'login'));
+    } else {
+        header('Location: /index.html');
 
-    $logout_html = <<<EOF
+        $ret = <<<EOF
 <script type="text/javascript">
 window.top.location.href = "/index.html";
 </script>
 EOF;
 
-    echo $logout_html;
+    }
+    echo $ret;
     exit();
-}
+} 
 

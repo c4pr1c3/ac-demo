@@ -63,7 +63,7 @@ function ajaxDelete(obj) {
 	key = tr[0].childNodes[5].innerText;
 	filename = tr.find('td a')[0].innerText;
 
-	if(!confirm('确认删除？')) {
+	if(!confirm('确认删除文件\n ' + filename + ' ？')) {
 		return;
 	}
 
@@ -100,5 +100,54 @@ function ajaxDelete(obj) {
         }
     });
 }
+
+function ajaxShare(obj) {
+
+	tr = $(obj.parentNode.parentNode);
+	console.log(tr);
+
+	fkey = tr[0].childNodes[5].innerText;
+	fid  = tr.find('td')[0].innerText
+	fsname = tr.find('td a')[0].innerText;
+	fstime = tr[0].childNodes[7].innerText; 
+	fsize = tr[0].childNodes[9].innerText; 
+
+    if(fsize > 1024) {
+        if(fsize > 1024 * 1024) {
+            fsize = parseFloat(fsize / (1024*1024)).toFixed(2);
+            fsize = fsize + " MB";
+        } else {
+            fsize = parseFloat(fsize / 1024).toFixed(2);
+            fsize = fsize + " KB";
+        }
+    } else {
+        fsize = fsize + " B";
+    }
+
+    $("#fid").val(fid);
+    $("#fkey").val(fkey);
+    $("#fsname")[0].innerText = fsname;
+    $("#fstime")[0].innerText = fstime;
+    $("#fsize")[0].innerText = fsize;
+
+	// AJAX POST to get file share url
+	$(function(){
+		$('#shareForm').submit(function(e){
+			e.preventDefault();
+			$.ajax({
+				url: 'share.php', //this is the submit URL
+				type: 'POST', //or POST
+				data: $('#shareForm').serialize(),
+				dataType: 'json',
+				encode: true,
+				success: function(data){
+					console.log('successfully submitted')
+					console.log(data);
+				}
+			});
+		});
+	});
+}
+
 
 

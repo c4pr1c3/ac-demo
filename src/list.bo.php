@@ -11,8 +11,11 @@ function listFiles($uid, $offset, $limit, $search = '') {
       $content = listFilesInDb($uid, $offset, $limit, $search);
       // pack name with href
       foreach($content as $key => $row) {
+        $row['name'] = htmlspecialchars($row['name']); // prevent DOM based XSS
         $content[$key]['name'] = '<a href="download.php?id=' . $row['id'] . '">' . $row['name'] . '</a>';
-        $content[$key]['del'] = '<a href="#" onclick="ajaxDelete(this);">删除</a>';
+        $content[$key]['del'] = '<a href="#" onclick="ajaxDelete(this);"><span class="glyphicon glyphicon-remove"></span></a>';
+        // <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" data-whatever="@mdo">Open modal for @mdo</button>
+        $content[$key]['share'] = '<a href="#" onclick="ajaxShare(this);" data-toggle="modal" data-target="#shareModal"><span class="glyphicon glyphicon-share"></span></a>';
       }
     } else {
       $content = array();
