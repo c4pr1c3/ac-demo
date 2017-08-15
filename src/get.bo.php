@@ -2,10 +2,11 @@
 
 require 'config.php';
 require 'utils.php';
+require 'db.php';
 
-function validateShareLink($id, $sha256, $expire_ts, $count, $token) {
+function validateShareLink($id, $sha256, $expire_ts, $count, $token, $nonce) {
     if(getMasterKey($masterKey)) {
-        $data = sprintf("%s-%s-%d-%d", $id, $sha256, $expire_ts, $count);
+        $data = sprintf("%s-%s-%s-%d-%d", $id, $sha256, $nonce, $expire_ts, $count);
         $computedToken = hash_hmac(Config::$shareHashHmacAlgo, $data, $masterKey);
 
         return $token === $computedToken;
@@ -14,4 +15,14 @@ function validateShareLink($id, $sha256, $expire_ts, $count, $token) {
     }
 }
 
+
+function getFileShareInfo($fid, $nonce) {
+
+    return getFileShareInfoFromDb($fid, $nonce);
+}
+
+function updateDownloadCount($fid, $nonce) {
+
+    return updateDownloadCountInDb($fid, $nonce);
+}
 

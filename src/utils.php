@@ -83,11 +83,12 @@ return array(
 
 
 function encryptFile($input_file, $enc_key, $filename) {
-    if(!is_file($input_file)) {
-        return false;
+    if(!@is_file($input_file)) {
+        $plaintext = $input_file;
+    } else {
+        $plaintext = file_get_contents($input_file); // FIXME 对于大文件的加密，这种一次性读取明文的方式对内存的压力太大，应分片读取
     }
 
-    $plaintext = file_get_contents($input_file); // FIXME 对于大文件的加密，这种一次性读取明文的方式对内存的压力太大，应分片读取
     $method = "aes-256-cbc"; // print_r(openssl_get_cipher_methods());
     $enc_options = 0;
     $iv_length = openssl_cipher_iv_length($method);
@@ -102,6 +103,10 @@ function encryptFile($input_file, $enc_key, $filename) {
 }
 
 function decryptFile($saved_ciphertext, $enc_key) {
+
+    if(@is_file($saved_ciphertext)) {
+        $saved_ciphertext = file_get_contents($saved_ciphertext);
+    }
     // 检查密文格式是否正确、符合我们的定义
     if(preg_match('/.*$.*$.*$.*$.*/', $saved_ciphertext) !== 1) {
         return false;
@@ -139,3 +144,21 @@ function getMasterKey(&$masterKey) {
     return true;
 }
 
+function getShareFilePath($uid, $sha256) {
+    $datetime = date('Y-m-d H:i:s');
+    $date = date_format(date_create(), 'Y/m/d/H/i/s');
+    $shareDir = sprintf("%s/%s/%s", Config::$shareRoot, $uid, $date);
+    $shareFile = sprintf("%s/%s.enc", $shareDir, $sha256);
+
+    return $shareFile;
+}
+
+function generateRandomString($length = 8) {
+    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $charactersLength = strlen($characters);
+    $randomString = '';
+    for ($i = 0; $i < $length; $i++) {
+        $randomString .= $characters[rand(0, $charactersLength - 1)];
+    }
+    return $randomString;
+}

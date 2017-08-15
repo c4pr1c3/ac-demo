@@ -17,6 +17,7 @@ class Config {
         )
     );
     public static $uploadRoot = "/var/www/upload";
+    public static $shareRoot = "/var/www/share";
     public static $debugLogFile = '/tmp/cucCloudPan.log';
     public static $symmetricEncKeyLen = 32;
     public static $asymmetricEncKeyLen = 32;
@@ -27,4 +28,6 @@ class Config {
     public static $dftAllowedDldCount = 499;
     public static $dftDldExpHours = 1;
     public static $shareHashHmacAlgo = 'sha256';
+    public static $shareKeyLen = 6;
+    public static $nonceLen = 8;
 }

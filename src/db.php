@@ -182,4 +182,66 @@ function findFileByShasumAndUid($sha256, $uid) {
     }
 }
 
+function validateUserFileOwnershipInDb($uid, $fid, $sha256) {
+    try {
+        $conn = connectDb();
+        $sql = "select count(id) as has_ownership from files where id=:fid and uid=:uid and sha256=:sha256";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':uid', $uid, PDO::PARAM_INT);
+        $stmt->bindParam(':fid', $fid, PDO::PARAM_INT);
+        $stmt->bindParam(':sha256', $sha256, PDO::PARAM_STR);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['has_ownership'];
+    } catch(PDOException $e) {
+        throw $e;
+    }
+}
+
+function saveShareFileInfoInDb($fid, $shareKeyHash, $enc_key_in_db, $shareFilePath, $nonce) {
+    try {
+        $conn = connectDb();
+        $sql = "INSERT INTO share (fid, sharekey, enckey, filepath, nonce) VALUES (:fid, :sharekey, :enckey, :filepath, :nonce)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':fid', $fid);
+        $stmt->bindParam(':sharekey', $shareKeyHash);
+        $stmt->bindParam(':enckey', $enc_key_in_db);
+        $stmt->bindParam(':filepath', $shareFilePath);
+        $stmt->bindParam(':nonce', $nonce);
+        return $stmt->execute();
+    } catch(PDOException $e) {
+        throw $e;
+    }
+}
+
+function getFileShareInfoFromDb($fid, $nonce) {
+    try {
+        $conn = connectDb();
+        $sql = "select dcount, sharekey, share.enckey as enckey, filepath, name, size from share left join files on share.fid=files.id where fid=:fid and nonce=:nonce";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bindValue(':fid', (int)$fid, PDO::PARAM_INT);
+        $stmt->bindValue(':nonce', $nonce, PDO::PARAM_STR);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    } catch(PDOException $e) {
+        throw $e;
+    }
+}
+
+function updateDownloadCountInDb($fid, $nonce) {
+    try {
+        $conn = connectDb();
+        $sql = "update share set dcount=dcount+1, access_time=now() where fid=:fid and nonce=:nonce";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':fid', $fid);
+        $stmt->bindParam(':nonce', $nonce);
+        return $stmt->execute();
+
+    } catch(PDOException $e) {
+        throw $e;
+    }
+}
+
+
 

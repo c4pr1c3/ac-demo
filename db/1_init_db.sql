@@ -24,10 +24,14 @@ CREATE TABLE `users` (
 
 DROP TABLE IF EXISTS `share`;
 CREATE TABLE `share` (
-    `id` INT NOT NULL AUTO_INCREMENT,
-    `fid` INT NOT NULL,
-    `dcount` INT NOT NULL COMMENT '文件被下载次数',
-    `access_time` DATETIME NULL COMMENT '最近被下载时间',
-    PRIMARY KEY (`id`));
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `fid` int(11) NOT NULL,
+    `dcount` int(11) NOT NULL DEFAULT '0' COMMENT '文件被下载次数',
+    `access_time` datetime DEFAULT NULL COMMENT '最近被下载时间',
+    `sharekey` char(60) NOT NULL COMMENT '分享链接使用的解密口令，采用与登录口令相同的单向慢速散列存储方法',
+    `enckey` text NOT NULL,
+    `filepath` varchar(255) NOT NULL COMMENT '文件保存路径',
+    `nonce` char(8) NOT NULL COMMENT '避免同一个文件被重复分享，每次分享时随机产生',
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4;
 
