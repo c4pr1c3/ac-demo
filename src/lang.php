@@ -22,7 +22,9 @@ class Prompt {
         'file_ownership_mismatch' => '无权分享当前文件',
         'share_file_failed_in_create_file' => '分享文件时创建分享文件写入失败',
         'share_file_expired' => '已过期的分享文件，无法访问',
-        'share_file_exceed_down_limit' => '超过允许的下载次数，无法访问'
+        'share_file_exceed_down_limit' => '超过允许的下载次数，无法访问',
+        'share_file_invalid_access_code' => '验证码错误',
+        'share_file_not_found' => '错误的文件分享链接'
     );
     public static $uploadErr = array(
         UPLOAD_ERR_INI_SIZE => '上传的文件超过了10MB',

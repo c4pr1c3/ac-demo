@@ -162,3 +162,27 @@ function generateRandomString($length = 8) {
     }
     return $randomString;
 }
+
+function getUriRoot() {
+    $server_name = $_SERVER['SERVER_NAME'];
+    $port = '';
+    switch($_SERVER['SERVER_PORT']) {
+    case '80':
+        $protocol = 'http';
+        break;
+    case '443':
+        $protocol = 'https';
+        break;
+    default:
+        $protocol = 'http';
+        break;
+    } 
+    if(empty($port)) {
+        $uriRoot = sprintf('%s://%s', $protocol, $server_name);
+    } else {
+        $uriRoot = sprintf('%s://%s:%s', $protocol, $server_name, $port);
+    }
+
+    return $uriRoot;
+}
+

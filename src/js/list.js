@@ -141,8 +141,14 @@ function ajaxShare(obj) {
 				dataType: 'json',
 				encode: true,
 				success: function(data){
+                    $('#shareModal').modal('toggle');
+                    $('#shareResultModal').modal('toggle');
 					console.log('successfully submitted')
 					console.log(data);
+					console.log(data.url);
+					console.log(data.access_code);
+                    $('#sharedLink')[0].innerText = data.url + ' 分享码：' + data.access_code;
+                    $('.panel-body').css('word-wrap', 'break-word');
 				}
 			});
 		});

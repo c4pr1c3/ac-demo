@@ -39,7 +39,7 @@ if(validateUserFileOwnership($uid, $fid, $sha256)) {
     debug_log($ret, __FILE__, __LINE__);
     if(empty($err)) {
       $params = generateShareLink($fid, $sha256, $expire_hours, $allowed_download_count, $nonce);
-      $ret = array('error' => '', 'url' => 'get.php' . $params, 'access_code' => $shareKey);
+      $ret = array('error' => '', 'url' => getUriRoot() . '/get.php' . $params, 'access_code' => $shareKey);
     } else {
       $ret = array('error' => $err);
     }
