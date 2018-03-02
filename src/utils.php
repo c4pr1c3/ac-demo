@@ -175,6 +175,7 @@ function getUriRoot() {
         break;
     default:
         $protocol = 'http';
+        $port = $_SERVER['SERVER_PORT'];
         break;
     } 
     if(empty($port)) {

@@ -16,8 +16,8 @@ class Config {
             )
         )
     );
-    public static $uploadRoot = "/var/www/upload";
-    public static $shareRoot = "/var/www/share";
+    public static $uploadRoot = "/srv/acdemo/upload";
+    public static $shareRoot = "/srv/acdemo/share";
     public static $debugLogFile = '/tmp/cucCloudPan.log';
     public static $symmetricEncKeyLen = 32;
     public static $asymmetricEncKeyLen = 32;

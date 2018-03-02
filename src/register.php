@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="zh">
 
@@ -21,7 +24,6 @@
 <body>
 
 <?php
-session_start();
 require_once 'register.bo.php';
 
 // 根据客户端请求类型是GET还是POST，分别设置页面中不同div是否可见

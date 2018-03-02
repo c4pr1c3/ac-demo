@@ -1,2 +1,3 @@
-GRANT Insert,Select,Delete,Update ON `acdemo`.* TO `acuser`@`127.0.0.1` IDENTIFIED by 'password123';
+CREATE SCHEMA IF NOT EXISTS `acdemo` DEFAULT CHARACTER SET utf8mb4 ;
+GRANT Insert,Select,Delete,Update ON `acdemo`.* TO `acuser`@`%` IDENTIFIED by 'password123';
 flush privileges;

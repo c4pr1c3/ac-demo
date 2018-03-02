@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+
+  db:
+    image: cuc_ac_demo_db:1.0
+    restart: always
+    networks:
+      - overlay
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+
+  php:
+    image: cuc_ac_demo_php:1.0
+    restart: always
+    networks:
+      - overlay
+    ports:
+      - 8080:80
+    volumes:
+      - ../src:/var/www/html
+    environment:
+      DB_AC_SERVERNAME: 'db'
+      DB_AC_USERNAME: 'acuser'
+      DB_AC_PASSWORD: 'password123'
+      DB_AC_DBNAME: 'acdemo'
+      AC_SHARE_MASTER_KEY: '!!!-plz-change-me-!!!!!'
+
+networks:
+  overlay:
+
