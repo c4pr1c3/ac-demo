@@ -38,6 +38,20 @@
 
 本样例工程通过 ``bash build.sh`` 方式部署后，打开浏览器访问： [http://localhost:8080](http://localhost:8080) 即可快速体验系统所有功能。
 
+## 依赖环境安装补充说明
+
+* ``build.sh`` 的执行需要 ``root`` 权限，普通用户可以 ``sudo bash build.sh``
+* 国内特殊网络环境条件下，安装 ``docker`` 和从 ``Docker Hub`` 拉取基础镜像可能会无法正常完成，建议使用可靠镜像源和缓存。推荐：
+    * [安装 docker 主程序指南](http://mirrors.ustc.edu.cn/help/docker-ce.html)
+    * [加速访问 Docker Hub 指南](http://mirrors.ustc.edu.cn/help/dockerhub.html)
+* 以 ``Ubuntu 16.04`` 为例，安装前端依赖文件所需要的操作步骤如下：
+
+```bash
+# 以下命令请在检出代码仓库后的本地仓库根目录下执行
+# 在等待安装 docker 和等待执行 bash build.sh 的过程中可以同时执行以下命令
+sudo apt update && sudo apt install -y npm && cd src/ && npm install
+```
+
 ## 附录：项目测试验证环境信息
 
 ```
