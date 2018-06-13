@@ -13,6 +13,7 @@ import datetime
 
 plaintext = b'HelloCUCPlaintextIsVeryGoooooooooood'
 key = Fernet.generate_key() # 需要安全保存该「秘钥」
+print(binascii.hexlify(key))
 f = Fernet(key) # Enc & Dec function Object
 token = f.encrypt(plaintext) # PEP-0272 compatible
 print(token)
