@@ -74,3 +74,76 @@ Server:
   Experimental:	false
 ```
 
+## Ubuntu 18.04 上配置本项目
+
+如果你在安装和使用 `pip` 时遇到类似如下的[错误](https://github.com/pypa/pipenv/issues/2122)：
+
+```
+➜ pip
+Traceback (most recent call last):
+  File "/usr/bin/pip", line 9, in <module>
+    from pip import main
+ImportError: cannot import name main
+```
+
+那么请看以下我的成功配置操作记录。
+
+```bash
+sudo apt-get update
+
+sudo apt install python3 python3-pip
+
+# 注意以下 2 行指令操作相当于不再保留 python 2.7.x 环境
+# 如果你需要 python 2.7.x 环境，建议使用 pyenv 方式安装配置和使用
+sudo update-alternatives --install /usr/local/bin/python python /usr/bin/python3 100
+sudo update-alternatives --install /usr/local/bin/pip pip /usr/bin/pip3 100
+
+# 经过上述 2 行指令操作，系统中默认执行 python 和 pip 都是调用 Python3 运行环境
+
+# 将 python3-pip 相关的可执行程序所在目录设置到当前用户 PATH 环境变量的最高优先级
+grep -q 'PATH=${HOME}/local/.bin:$PATH' ~/.bashrc || echo 'PATH=${HOME}/local/.bin:$PATH' >> ~/.bashrc
+
+# 使得上述环境变量变更生效
+source "${HOME}/.bashrc"
+
+# 测试安装 pipenv 
+pip install pipenv
+
+# 验证上述 python3 环境配置正确无误
+pipenv --version
+
+# 开始准备安装 Docker-CE
+sudo apt-get install -y \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+# 使用中科大镜像源代替 docker 官方 DEB 镜像源
+sudo add-apt-repository \
+   "deb [arch=amd64] https://mirrors.ustc.edu.cn/docker-ce/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
+
+# 安装 docker-ce
+sudo apt-get install docker-ce
+
+# 修改 docker pull 使用的 Docker Hub 镜像源为中科大 Docker 镜像源
+[[ -f /etc/default/docker.orig ]] || {
+  sudo cp /etc/default/docker /etc/default/docker.orig
+  echo 'DOCKER_OPTS="--registry-mirror=https://docker.mirrors.ustc.edu.cn/"' >> /etc/default/docker
+}
+
+# 重启 docker 守护进程
+sudo systemctl restart docker
+
+# 安装 docker-compose
+pip install docker-compose --user
+
+# 解决 sudo docker-compose 时找不到 docker-compose 的问题
+sudo update-alternatives --install /usr/local/bin/docker-compose docker-compose $HOME/.local/bin/docker-compose 100
+
+# enjoy ac-demo
+```
+
