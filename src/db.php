@@ -1,5 +1,5 @@
 <?php
-
+session_start();
 function connectDb() {
     // 编辑/etc/apache2/envvars，添加WEB服务器的环境变量供PHP代码读取数据库连接配置信息
     $servername = getenv('DB_AC_SERVERNAME');
@@ -11,7 +11,7 @@ function connectDb() {
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_PERSISTENT => true
     );
-    $conn = new PDO("mysql:host=$servername;dbname=$dbname;charset=$charset", $username, $password, $options);
+    $conn = @new PDO("mysql:host=$servername;dbname=$dbname;charset=$charset", $username, $password, $options);
     return $conn;
 }
 
