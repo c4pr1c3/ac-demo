@@ -1,13 +1,14 @@
 
 function showUploadForm() {
+
 					$('#wrapper').animate({
-						opacity: 'hide',
-						height:'hide'
+						opacity: 'show',
+						height:'show'
 					}, 'fast');
 
 					$('#wrapper2').animate({
-						height: 'show',
-						opacity: 'show'
+						height: 'hide',
+						opacity: 'hide'
 					}, 'slow');
 }
 
@@ -72,6 +73,11 @@ $(document).ready(function() {
                 //console.log(data['has-warning']);
                 if(data['has-warning'] == false) {
 					alert("登录成功！");
+
+    if($.cookie('loggedInUser') != undefined) {
+		var tp_str = "你好，"+$.cookie('loggedInUser');
+        $('#loggedInUserNameId').text(tp_str);
+    }
 					$('#wrapper').animate({
 						opacity: 'hide',
 						height:'hide'
