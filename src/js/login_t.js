@@ -1,6 +1,14 @@
 
 function showUploadForm() {
+					$('#wrapper').animate({
+						opacity: 'hide',
+						height:'hide'
+					}, 'fast');
 
+					$('#wrapper2').animate({
+						height: 'show',
+						opacity: 'show'
+					}, 'slow');
 }
 
 

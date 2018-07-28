@@ -214,7 +214,10 @@
 
 	<div id = "wrapper2" class = "file-page" style = "display:none;">
 		<div id = "file_div" class = "file-bck">
-			<h3 style = "text-align:left;">你好</h3>
+			<div>
+			<span style = "float:left;text-align:left;font-size:23.4px">你好</span>
+			<span style = "float:right;text-align:right;"><a href = "#">test</a></span>
+			</div>
 			<div>
 			<button id = "up_button" class = "file-bck-button">文件上传</button>
 			<button id = "list_button" class = "file-bck-button">文件列表</button>
@@ -224,7 +227,9 @@
 				<p>请选择10MB以下大小的文件，一次最多上传5个文件</p>
 			</div>
 			<div id = "dl-page" style = "display:none;">
-				
+				<div class="span12 text-center">
+					<div id="delTooltip" class="span12 text-center" role="alert"></div>
+				</div>	
     <table id="files-table" 
       data-toggle="table" 
       data-side-pagination="server"
@@ -246,7 +251,7 @@
         </tr>
       </thead>
     </table>
-
+	
 			</div>
 		</div>
 
@@ -254,6 +259,72 @@
 	
 </div>
 
+<div class="modal fade" id="shareModal" tabindex="-1" role="dialog" aria-labelledby="shareModalLabel">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="shareModalLabel">分享文件设置</h4>
+			</div>
+			<div class="modal-body">
+				<form id="shareForm">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title">文件名</h3>
+						</div>
+						<div class="panel-body" id="fsname"></div>
+					</div>
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title">文件大小</h3>
+						</div>
+						<div class="panel-body" id="fsize"></div>
+					</div>
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title">上传时间</h3>
+						</div>
+						<div class="panel-body" id="fstime"></div>
+					</div>
+					<div class="form-group">
+						<label for="allowed_download_count" class="control-label">可被下载次数:</label>
+						<input type="text" class="form-control" id="allowed_download_count" name="allowed_download_count"/>
+					</div>
+					<div class="form-group">
+						<label for="expire_hours" class="control-label">过期时间（从现在起几个小时）:</label>
+						<input type="text" class="form-control" id="expire_hours" name="expire_hours"/>
+					</div>
+						<input type="hidden" name="fid" id="fid"/>
+						<input type="hidden" name="fkey" id="fkey"/>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">暂时不分享</button>
+						<input type="submit" class="btn btn-primary" value="确定分享"/>
+				</div>
+			</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="shareResultModal" tabindex="-1" role="dialog" aria-labelledby="shareResultModalLabel">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="shareResultModalLabel">分享文件结果</h4>
+			</div>
+			<div class="modal-body">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title">请复制以下分享链接及密码</h3>
+						</div>
+						<div class="panel-body" id="sharedLink"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
   <script src="node_modules/jquery/dist/jquery.min.js"></script>
     <script src="node_modules/jquery.cookie/jquery.cookie.js" charset="utf-8"></script>
 	<script src="node_modules/bootstrap-table/dist/bootstrap-table.min.js"></script>
@@ -263,6 +334,9 @@
 		  <script src="node_modules/bootstrap-fileinput/js/fileinput.min.js"></script>
 		    <script src="node_modules/bootstrap-fileinput/js/locales/zh.js"></script>
 			<script src = "js/login_t.js"></script>
+			
+			<script src = "js/list.js"></script>
+			<script src = "js/upload.js"></script>
 <script type="text/javascript">
 
 
@@ -442,7 +516,7 @@ $(function(){
 		}, 'slow');
 	})
 	$('#list_button').click(function(){
-	
+		$('#files-table').bootstrapTable('refresh',{url:'/list.php'});
         $('#up-page').animate({
             height: 'hide',
             opacity: 'hide'
