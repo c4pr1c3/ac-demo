@@ -8,6 +8,7 @@
 
  <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
    <link rel="stylesheet" href="node_modules/bootstrap-fileinput/css/fileinput.min.css">
+   <link rel="stylesheet" href="node_modules/bootstrap-table/dist/bootstrap-table.min.css">
 <style type="text/css">
     .center{text-align: center;}
     .login-page {
@@ -16,7 +17,7 @@
       margin: auto;
     }
 	.file-page{
-      width: 50%;
+      width: 55%;
       padding: 8% 0 0;
       margin: auto;
 	}
@@ -211,7 +212,7 @@
       </div>
     </div>
 
-	<div id = "wrapper2" class = "file-page">
+	<div id = "wrapper2" class = "file-page" style = "display:none;">
 		<div id = "file_div" class = "file-bck">
 			<h3 style = "text-align:left;">你好</h3>
 			<div>
@@ -222,6 +223,31 @@
 		       <input id="uploadFiles" name="cucFiles[]" type="file" multiple class="file file-loading" data-allowed-file-extensions='["doc", "docx", "xls", "xlsx", "ppt", "pptx", "zip", "pdf"]'>
 				<p>请选择10MB以下大小的文件，一次最多上传5个文件</p>
 			</div>
+			<div id = "dl-page" style = "display:none;">
+				
+    <table id="files-table" 
+      data-toggle="table" 
+      data-side-pagination="server"
+      data-url="/list.php"
+      data-height="600"
+      data-side-pagination="server"
+      data-pagination="true"
+      data-page-list="[3, 5, 10]"
+      data-search="true">
+      <thead>
+        <tr>
+          <th data-field="id">ID</th>
+          <th data-field="name">文件名</th>
+          <th data-field="sha256">Sha256</th>
+          <th data-field="create_time">上传时间</th>
+          <th data-field="size">文件大小</th>
+          <th data-field="del"></th>
+          <th data-field="share"></th>
+        </tr>
+      </thead>
+    </table>
+
+			</div>
 		</div>
 
 	</div>
@@ -230,10 +256,13 @@
 
   <script src="node_modules/jquery/dist/jquery.min.js"></script>
     <script src="node_modules/jquery.cookie/jquery.cookie.js" charset="utf-8"></script>
+	<script src="node_modules/bootstrap-table/dist/bootstrap-table.min.js"></script>
+	  <script src="node_modules/bootstrap-table/dist/locale/bootstrap-table-zh-CN.min.js"></script>
 	  <!-- Include all compiled plugins (below), or include individual files as needed -->
 	    <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
 		  <script src="node_modules/bootstrap-fileinput/js/fileinput.min.js"></script>
 		    <script src="node_modules/bootstrap-fileinput/js/locales/zh.js"></script>
+			<script src = "js/login_t.js"></script>
 <script type="text/javascript">
 
 
@@ -362,10 +391,14 @@ function check_login()
   //},1);  
  //}
 
-	alert("hello");
         $('#wrapper').animate({
-            height: 'hide',
-            opacity: 'hide'
+            opacity: 'hide',
+			height:'hide'
+        }, 'fast');
+
+        $('#wrapper2').animate({
+            height: 'show',
+            opacity: 'show'
         }, 'slow');
 
 }
@@ -397,12 +430,32 @@ function check_register(){
 	});
 }
 $(function(){
+	$('#up_button').click(function(){
+        $('#up-page').animate({
+            height: 'show',
+            opacity: 'show'
+        }, 'slow');
+
+		$('#dl-page').animate({
+			height: 'hide',
+			opacity: 'hide'
+		}, 'slow');
+	})
+	$('#list_button').click(function(){
+	
+        $('#up-page').animate({
+            height: 'hide',
+            opacity: 'hide'
+        }, 'slow');
+		$('#dl-page').animate({
+			height: 'show',
+			opacity: 'show'
+		}, 'slow');
+		
+		})	
+	
     $("#create").click(function(){
         check_register();
-        return false;
-    })
-    $("#login").click(function(){
-        check_login();
         return false;
     })
     $('.message a').click(function () {
