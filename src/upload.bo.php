@@ -5,7 +5,16 @@ require 'utils.php';
 require 'db.php';
 
 function doFileTypeFilter() {
-    // TODO 文件类型校验
+	$allowed_types = array('doc', 'docx', 'xls','xlsx','ppt','pptx','zip','pdf','jpg','jpeg','bmp','png');
+	$filename = $_FILES['cucFiles']['name'];	
+	$ext = strtolower($ext[1]);
+	if(!in_array($ext, $allowed_types)){
+		return false;
+	}
+	else
+	{
+		return true;
+	}
 }
 
 function doFileUpload() {
@@ -21,7 +30,11 @@ function doFileUpload() {
             ];
             return $ret;
         }
-        doFileTypeFilter();
+		if(!doFileTypeFilter())
+		{
+			$ret = ['error'=>"文件格式不符合"];
+			return $ret;
+		}
 
         // TODO 文件“秒传”功能依赖于客户端先上传sha256校验和，未找到相同散列值再上传文件
         // TODO 文件“秒传”功能对于文件在文件系统上采用加密存储机制来说是“无法完全实现”的
