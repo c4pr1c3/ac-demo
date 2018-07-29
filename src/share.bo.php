@@ -17,8 +17,8 @@ function validateUserFileOwnership($uid, $fid, $sha256) {
     return ($ret == 1);
 }
 
-function saveShareFileInfo($fid, $shareKeyHash, $enc_key_in_db, $shareFilePath, $nonce) {
-    $ret = saveShareFileInfoInDb($fid, $shareKeyHash, $enc_key_in_db, $shareFilePath, $nonce);
+function saveShareFileInfo($fid, $shareKeyHash, $enc_key_in_db, $shareFilePath, $nonce,$_sign) {
+    $ret = saveShareFileInfoInDb($fid, $shareKeyHash, $enc_key_in_db, $shareFilePath, $nonce,$_sign);
     return $ret;
 }
 

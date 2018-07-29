@@ -2,6 +2,8 @@
 
 function connectDb() {
     // 编辑/etc/apache2/envvars，添加WEB服务器的环境变量供PHP代码读取数据库连接配置信息
+    //下列参数数值为db  acuser password123  acdemo   Array
+
     $servername = getenv('DB_AC_SERVERNAME');
     $username = getenv('DB_AC_USERNAME');
     $password = getenv('DB_AC_PASSWORD');
@@ -12,6 +14,7 @@ function connectDb() {
         PDO::ATTR_PERSISTENT => true
     );
     $conn = new PDO("mysql:host=$servername;dbname=$dbname;charset=$charset", $username, $password, $options);
+   file_put_contents('debug.log', "coonectDb ".$servername ." ".$username." ".$password." ".$dbname." ".$options. "\n", FILE_APPEND);
     return $conn;
 }
 
@@ -20,24 +23,50 @@ function checkRegisterInDb($name) {
         $conn = connectDb();
         $sql = "select password from users where name=:name";
         $stmt = $conn->prepare($sql);
-        $stmt->bindParam(':name', $name);
+        $stmt->bindParam(':name', $name);     //将数值与参数捆绑
         $stmt->execute();
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return isset($result['password']) ? $result['password'] : '';
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);    // 返回查询结果 即密码
+       // file_put_contents('debug.log', "checkRegisterInDb  &result ".json_encode($result)."\n",FILE_APPEND);
+
+        return isset($result['password']) ? $result['password'] : '';   //检查该参数是否被设置为某个数值，如果有null 就返回false
     } catch(PDOException $e) {
         throw $e;
     }
 }
 
-function registerInDb($name, $password, $pubkey, $privkey) {
+function registerInDb($name, $password, $pubkey, $privkey,$email) {
     try {
         $conn = connectDb();
-        $sql = "INSERT INTO users (name, password, pubkey, privkey) VALUES (:name, :password, :pubkey, :privkey)";
+        $status =0;
+        $sql = "INSERT INTO users (name, password, pubkey, privkey , email,valid ) VALUES (:name, :password, :pubkey, :privkey , :email ,:valid)";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':name', $name);
         $stmt->bindParam(':password', $password);
         $stmt->bindParam(':pubkey', $pubkey);
         $stmt->bindParam(':privkey', $privkey);
+        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':valid', $status);
+        return $stmt->execute();
+
+    } catch(PDOException $e) {
+        throw $e;
+    }
+}
+
+function verifyRegisterInDb($name) {
+    try {
+        $conn = connectDb();
+        $status =0;
+
+        $sql = 'update  usres set valid = 1 where name = :name';
+       // $sql = "INSERT INTO users (name, password, pubkey, privkey , email,valid ) VALUES (:name, :password, :pubkey, :privkey , :email ,:valid)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':name', $name);
+//        $stmt->bindParam(':password', $password);
+//        $stmt->bindParam(':pubkey', $pubkey);
+//        $stmt->bindParam(':privkey', $privkey);
+//        $stmt->bindParam(':email', $email);
+//        $stmt->bindParam(':valid', $status);
         return $stmt->execute();
 
     } catch(PDOException $e) {
@@ -59,10 +88,10 @@ function getUserInfoInDb($name) {
     }
 }
 
-function uploadFileInDb($name, $size, $enckey, $sha256, $uid, $datetime) {
+function uploadFileInDb($name, $size, $enckey, $sha256, $uid, $datetime,$sign) {
     try {
         $conn = connectDb();
-        $sql = "INSERT INTO files (name, size, enckey, sha256, uid, create_time) VALUES (:name, :size, :enckey, :sha256, :uid, :datetime)";
+        $sql = "INSERT INTO files (name, size, enckey, sha256, uid, create_time,sign) VALUES (:name, :size, :enckey, :sha256, :uid, :datetime  ,:sign)";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':name', $name);
         $stmt->bindParam(':size', $size);
@@ -70,6 +99,7 @@ function uploadFileInDb($name, $size, $enckey, $sha256, $uid, $datetime) {
         $stmt->bindParam(':sha256', $sha256);
         $stmt->bindParam(':uid', $uid);
         $stmt->bindParam(':datetime', $datetime);
+        $stmt->bindParam(':sign', $sign);
         $result = $stmt->execute();
         return $result;
 
@@ -140,12 +170,48 @@ function getSavedCipherTextFromDb($id, $uid) {
     }
 }
 
-function findDuplicateFileInDb($sha256) {
+
+
+function getSavedCipher_sign_TextFromDb($id, $uid) {  //用于从files 中取出文件的sign
     try {
         $conn = connectDb();
-        $sql = "select count(id) as dup from files where sha256=:sha256";
+        $sql = "select sign  from files where uid=:uid and id=:id";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bindValue(':uid', (int)$uid, PDO::PARAM_INT);
+        $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['sign'];
+    } catch(PDOException $e) {
+        throw $e;
+    }
+}
+
+
+
+//function findDuplicateFileInDb($sha256) {
+//    try {
+//        $conn = connectDb();
+//        $sql = "select count(id) as dup from files where sha256=:sha256";
+//        $stmt = $conn->prepare($sql);
+//        $stmt->bindParam(':sha256', $sha256, PDO::PARAM_STR);
+//        $stmt->execute();
+//        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+//        return $result['dup'];
+//    } catch(PDOException $e) {
+//        throw $e;
+//    }
+//}
+
+
+function findDuplicateFileInDb($sha256,$uid) {
+    try {
+        $conn = connectDb();
+        $sql = "select count(id) as dup from files where sha256=:sha256 and uid =:uid";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':sha256', $sha256, PDO::PARAM_STR);
+         $stmt->bindParam(':uid', $uid, PDO::PARAM_STR);
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return $result['dup'];
@@ -153,6 +219,7 @@ function findDuplicateFileInDb($sha256) {
         throw $e;
     }
 }
+
 
 function deleteFileInDb($sha256, $uid) {
     try {
@@ -198,16 +265,17 @@ function validateUserFileOwnershipInDb($uid, $fid, $sha256) {
     }
 }
 
-function saveShareFileInfoInDb($fid, $shareKeyHash, $enc_key_in_db, $shareFilePath, $nonce) {
+function saveShareFileInfoInDb($fid, $shareKeyHash, $enc_key_in_db, $shareFilePath, $nonce,$_sign) {
     try {
         $conn = connectDb();
-        $sql = "INSERT INTO share (fid, sharekey, enckey, filepath, nonce) VALUES (:fid, :sharekey, :enckey, :filepath, :nonce)";
+        $sql = "INSERT INTO share (fid, sharekey, enckey, filepath, nonce,_sign) VALUES (:fid, :sharekey, :enckey, :filepath, :nonce ,:_sign)";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':fid', $fid);
         $stmt->bindParam(':sharekey', $shareKeyHash);
         $stmt->bindParam(':enckey', $enc_key_in_db);
         $stmt->bindParam(':filepath', $shareFilePath);
         $stmt->bindParam(':nonce', $nonce);
+        $stmt->bindParam(':_sign', $_sign);
         return $stmt->execute();
     } catch(PDOException $e) {
         throw $e;
@@ -217,7 +285,39 @@ function saveShareFileInfoInDb($fid, $shareKeyHash, $enc_key_in_db, $shareFilePa
 function getFileShareInfoFromDb($fid, $nonce) {
     try {
         $conn = connectDb();
-        $sql = "select users.name as uname, dcount, sharekey, share.enckey as enckey, filepath, files.name as fname, size from share left join files on share.fid=files.id left join users on files.uid=users.id where fid=:fid and nonce=:nonce";
+        $sql = "select users.name as uname, dcount, sharekey, share.enckey as enckey, filepath, files.name as fname, size , share._sign from share left join files on share.fid=files.id left join users on files.uid=users.id where fid=:fid and nonce=:nonce";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bindValue(':fid', (int)$fid, PDO::PARAM_INT);
+        $stmt->bindValue(':nonce', $nonce, PDO::PARAM_STR);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    } catch(PDOException $e) {
+        throw $e;
+    }
+}
+
+
+function getFileShareSignFromDb($fid, $nonce) {
+    try {
+        $conn = connectDb();
+        $sql = "select  _sign from share  where fid=:fid and nonce=:nonce";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bindValue(':fid', (int)$fid, PDO::PARAM_INT);
+        $stmt->bindValue(':nonce', $nonce, PDO::PARAM_STR);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    } catch(PDOException $e) {
+        throw $e;
+    }
+}
+
+
+function getFileShareUid($fid, $nonce) {
+    try {
+        $conn = connectDb();
+        $sql = "select users.pubkey as pub_key from share left join files on share.fid=files.id left join users on files.uid=users.id where fid=:fid and nonce=:nonce";
 
         $stmt = $conn->prepare($sql);
         $stmt->bindValue(':fid', (int)$fid, PDO::PARAM_INT);

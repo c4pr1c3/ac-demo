@@ -1,4 +1,4 @@
-<?php
+ <?php
 
 require 'auth.php';
 require 'delete.bo.php';

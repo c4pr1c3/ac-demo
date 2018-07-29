@@ -45,7 +45,7 @@ $privkey = openssl_pkey_new($pk_config);
 // 查看生成的server.key的内容
 // openssl x509 -in server.key -text -noout
 // 给服务器安装使用的证书一般不使用口令保护，避免每次重启服务器时需要人工输入口令
-openssl_pkey_export($privkey, $pkeyout, $password);
+openssl_pkey_export($privkey, $pkeyout, $password);  //将privatekey 用 password 存储以后  输出到 pkout
 
 // 制作CSR文件：Certificate Signing Request
 // 等价openssl命令
@@ -63,6 +63,8 @@ $sscert = openssl_csr_sign($csr, null, $privkey, 365, $pk_config);
 // openssl req -x509 -newkey rsa:2048 -keyout server.key -out server.crt -days 365
 
 // 如果不再需要使用，应尽快释放私钥资源，防止针对服务器内存明文私钥数据的直接非法访问
+
+file_put_contents('debug.log', "user first register's privatekey ".$privkey."\n", FILE_APPEND);
 openssl_pkey_free($privkey);
 
 /*
@@ -94,7 +96,7 @@ function encryptFile($input_file, $enc_key, $filename) {
     $iv_length = openssl_cipher_iv_length($method);
     $iv = openssl_random_pseudo_bytes($iv_length);
 
-    $ciphertext = openssl_encrypt($plaintext, $method, $enc_key, $enc_options, $iv);
+    $ciphertext = openssl_encrypt($plaintext, $method, $enc_key, $enc_options, $iv);   // 加密从文件中读取的内容
 
     // 定义我们“私有”的密文结构
     $saved_ciphertext = sprintf('%s$%d$%s$%s$%s', $method, $enc_options, bin2hex($iv), $filename, $ciphertext);
@@ -118,6 +120,19 @@ function decryptFile($saved_ciphertext, $enc_key) {
 
     return openssl_decrypt($decryptedArr[4], $decryptedArr[0], $enc_key, $decryptedArr[1], hex2bin($decryptedArr[2]));
 
+}
+
+function getEncryptFileForShare_sign ($saved_ciphertext) {
+
+    if(@is_file($saved_ciphertext)) {
+        $saved_ciphertext = file_get_contents($saved_ciphertext);
+    }
+    // 检查密文格式是否正确、符合我们的定义
+    if(preg_match('/.*$.*$.*$.*$.*/', $saved_ciphertext) !== 1) {
+        return false;
+    }
+
+    return $saved_ciphertext;
 }
 
 function getPagination($number, $pageSize) {
