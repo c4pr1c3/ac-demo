@@ -11,9 +11,7 @@ $token  = empty($_GET['token']) ? '' : $_GET['token'];
 
 if(empty($_POST['access_code'])) {
 } else {
-
     $access_code = $_POST['access_code'];
-
 }
 
 if(validateShareLink($fid, $key, $expire, $count, $token, $nonce)) {
@@ -85,10 +83,10 @@ HTML;
             exit();
         }
 
-        if(password_verify($access_code, $fileShareInfo['sharekey'])) {
+        if(sodium_crypto_pwhash_str_verify($fileShareInfo['sharekey'], sodium_hex2bin($access_code))) {
             // 用户提供的access_code是正确的
-            $enc_key = decryptFile($fileShareInfo['enckey'], $access_code);
-            $decrypted_content = decryptFile($fileShareInfo['filepath'], $enc_key);
+            $enc_key = decryptFile('enckey', sodium_hex2bin($fileShareInfo['nonce']), sodium_hex2bin($fileShareInfo['enckey']),sodium_hex2bin($access_code));
+            $decrypted_content = decryptFile($fileShareInfo['fname'], sodium_hex2bin($fileShareInfo['nonce']), file_get_contents($fileShareInfo['filepath']), $enc_key);
 
             if($decrypted_content === false) {
                 $error = Prompt::$msg['decrypt_oops'];

@@ -3,7 +3,6 @@
 require 'auth.php';
 require 'download.bo.php';
 
-
 $id = empty($_GET['id']) ? '' : $_GET['id'];
 
 $uid = $_SESSION['uid'];
@@ -16,9 +15,10 @@ if($_SESSION['encrypted'] === false) {
     return;
 }
 
-list($error, $filename, $filesize, $decrypted_content) = download_file($id, $uid, $_SESSION['privkey'], $_SESSION['passphrase']);
+list($error, $filename, $filesize, $decrypted_content) = download_file($id, $uid, $_SESSION['sign'], $_SESSION['box'], $_SESSION['passphrase'], $_SESSION['nonce']);
 
 if(empty($error)) {
+    // ob_start();
     header('Content-Description: Decrypted File Download');
     header('Content-Disposition: attachment; filename="' . $filename . '"');
     header('Content-Transfer-Encoding: binary');
@@ -34,5 +34,3 @@ if(empty($error)) {
 } else {
     echo "$error";
 }
-
-

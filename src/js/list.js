@@ -26,8 +26,8 @@ function listFilesByPage(page) {
 					field: 'name',
 					title: '文件名'
 				}, {
-					field: 'sha256',
-					title: 'sha256'
+					field: 'sodium_hash',
+					title: 'sodium_hash'
 				}, {
 					field: 'create_time',
 					title: '上传时间'
@@ -101,6 +101,7 @@ function ajaxDelete(obj) {
     });
 }
 
+
 function ajaxShare(obj) {
 
 	tr = $(obj.parentNode.parentNode);
@@ -149,11 +150,14 @@ function ajaxShare(obj) {
 					console.log(data.access_code);
                     $('#sharedLink')[0].innerText = data.url + ' 分享码：' + data.access_code;
                     $('.panel-body').css('word-wrap', 'break-word');
-				}
+				},
+				error: function (data) {
+					console.log(data);
+					console.log(data.error);
+					console.log(data.url);
+					console.log(data.access_code);
+		        }
 			});
 		});
 	});
 }
-
-
-

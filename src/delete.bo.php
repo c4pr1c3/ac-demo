@@ -12,7 +12,7 @@ function delete_file($key, $uid) {
         return $ret;
     }
 
-    $create_time = findFileByShasumAndUid($key, $uid);
+    $create_time = findFileByHashAndUid($key, $uid);
 
     if(!empty($create_time)) {
         try {
@@ -37,4 +37,3 @@ function delete_file($key, $uid) {
     return 'ok';
 
 }
-
