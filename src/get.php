@@ -16,7 +16,7 @@ if(empty($_POST['access_code'])) {
 
 }
 
-if(validateShareLink($fid, $key, $expire, $count, $token, $nonce)) {
+if(validateShareLink($fid, $key, $expire, $count, $token, $nonce)) {   //检查链接是否被人更改过  使用hash 值判断
     // 检查是否过期
     $now = time();
     if($now > $expire) {
@@ -85,11 +85,25 @@ HTML;
             exit();
         }
 
-        if(password_verify($access_code, $fileShareInfo['sharekey'])) {
-            // 用户提供的access_code是正确的
-            $enc_key = decryptFile($fileShareInfo['enckey'], $access_code);
-            $decrypted_content = decryptFile($fileShareInfo['filepath'], $enc_key);
+        if(password_verify($access_code, $fileShareInfo['sharekey'])) {   //不保存分享码  保存其hash 值
+           // 验证是否是该用户的签名   获取公钥   密文    签名
+            $_sign =    getFileShareSignFromDb($fid, $nonce);  //获取share中的签名
+            $encryptFileFor_sign = getEncryptFileForShare_sign($fileShareInfo['filepath']);
 
+            $userInfo = getUserInfoInDb($fileShareInfo['uname']);
+            $pub_key = openssl_get_publickey($userInfo['pubkey']);
+            $sign_verify = openssl_verify($encryptFileFor_sign, base64_decode($_sign['_sign']), $pub_key, 7);
+
+            if($sign_verify !== 1) {
+                $error = Prompt::$msg['share_file_sign_verify_error'];
+            }
+//            file_put_contents('debug.log', "verify  share file sign  to download files  username". $fileShareInfo['uname']."\n", FILE_APPEND);
+//            file_put_contents('debug.log', "verify  share file sign  to download files  pub_key".$pub_key."\n", FILE_APPEND);
+ //           file_put_contents('debug.log', "verify  share file sign  to download files  ".$sign_verify. "\n", FILE_APPEND);
+
+
+            $enc_key = decryptFile($fileShareInfo['enckey'], $access_code);   //使用  accesscode 加密文件加密的对称密钥
+            $decrypted_content = decryptFile($fileShareInfo['filepath'], $enc_key);    //  解密出加密的文件
             if($decrypted_content === false) {
                 $error = Prompt::$msg['decrypt_oops'];
             }
@@ -110,15 +124,15 @@ HTML;
 
                 echo $decrypted_content;
                 exit();
-            } else {
+            } else
                 $ret = Prompt::$msg['share_file_invalid_access_code']; 
-            }
+
         } else {
-            $ret = Prompt::$msg['share_file_invalid_access_code']; 
-        }
-    } else {
-        $ret = Prompt::$msg['share_file_not_found']; 
+        $ret = Prompt::$msg['share_file_invalid_access_code'];
     }
+    } else {
+    $ret = Prompt::$msg['share_file_not_found'];
+}
 
 
 } else {

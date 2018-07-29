@@ -2,7 +2,8 @@
 
 class Prompt {
     public static $msg = array(
-        'invalid_username' => '用户名必须是可正常接收电子邮件的邮箱地址',
+        'invalid_username' => '请输入合法用户名 提示：仅包含数字汉字和字母',
+        'invalid_emailname' => '请输入可用邮箱',
         'invalid_password' => '口令长度不能超过36个字符',
         'register_ok' => '注册成功，请继续',
         'duplicate_username' => '该用户名已被注册',
@@ -10,6 +11,7 @@ class Prompt {
         'password_not_same' => '两次输入的口令不一致',
         'login_failed' => '登录失败，用户名和密码不匹配',
         'login_ok' => '登录成功',
+        'login_verify' => '注册帐号未激活，请尽快激活',
         'db_oops' => '数据库服务器未知错误，请稍后重试',
         'upload_enc_failed' => '文件上传加密失败',
         'upload_mkdir_failed' => '文件上传目录创建失败',
@@ -24,7 +26,8 @@ class Prompt {
         'share_file_expired' => '已过期的分享文件，无法访问',
         'share_file_exceed_down_limit' => '超过允许的下载次数，无法访问',
         'share_file_invalid_access_code' => '验证码错误',
-        'share_file_not_found' => '错误的文件分享链接'
+        'share_file_not_found' => '错误的文件分享链接',
+        'share_file_sign_verify_error'=>'分享的文件的签名验证错误'
     );
     public static $uploadErr = array(
         UPLOAD_ERR_INI_SIZE => '上传的文件超过了10MB',

@@ -38,17 +38,119 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <div class="<?= $pageLayout['showRegFormOrNot'] ?>">
     <form action="register.php" method="post">
       <h1>中传放心传</h1>
+
+        <div class="form-group" id="iuserNameDiv" >
+            <div class="form-group <?= $pageLayout['userName-has-warning'] ?>">
+                <label for="iuserName">用户名</label>
+                <input type="text" class="form-control" id="iuserName" name="userName"  onblur="checkUsername()"  oninput="checkUsername()" placeholder="请输入用户名" autofocus required maxlength="128" value="<?= $_SESSION['emailName'] ?>">
+                <p class="help-block" id ="name1"><?= $pageLayout['userNameMsg'] ?></p>
+
+                <script language='javascript' type='text/javascript'>  //前端检查用户名中是否有不合法字符
+                    // FIXME Bad Coding Style
+                    function checkUsername()
+                    {
+                        //正则表达式
+                        let reg = new RegExp("^[A-Za-z0-9\u4e00-\u9fa5]+$");//获取输入框中的值
+                        let username = document.getElementById("iuserName").value.trim();//判断输入框中有内容
+                        if(!reg.test(username))
+                        {
+                            $('#name1').text('用户名输入不合法');
+                            $('#iuserNameDiv').addClass('has-warning');
+                            $('#registerBtn').prop('disabled', true);
+                            $("#iuserName").val("");
+                        }
+                        else {
+                            $('#name1').text('');
+                            $('#iuserNameDiv').removeClass('has-warning');
+                            $('#registerBtn').prop('disabled', false);
+                        }
+                    }
+                </script>
+
+            </div>
+
       <div class="form-group">
-        <div class="form-group <?= $pageLayout['userName-has-warning'] ?>">
-          <label for="iUserName">用户名</label>
-          <input type="email" class="form-control" id="iUserName" name="userName" placeholder="请输入用户名" autofocus required maxlength="128" value="<?= $_SESSION['userName'] ?>">
-          <p class="help-block"><?= $pageLayout['userNameMsg'] ?></p>
+        <div class="form-group <?= $pageLayout['emailName-has-warning'] ?>">
+          <label for="iemailName">邮箱</label>
+          <input type="email" class="form-control" id="iemailName" name="emailName" placeholder="请输入有效邮箱" autofocus required maxlength="128" value="<?= $_SESSION['emailName'] ?>">
+          <p class="help-block"><?= $pageLayout['emailNameMsg'] ?></p>
+
         </div>
+
+
         <div id="iPasswordDiv" class="form-group <?= $pageLayout['password-has-warning'] ?>">
           <label for="iPassword">口令</label>
-          <input type="password" class="form-control" id="iPassword" name="password" placeholder="请输入登录口令" oninput="checkRegister()">
-          <p class="help-block"><?= $pageLayout['userPasswordMsg'] ?></p>
+          <input type="password" class="form-control" id="iPassword" name="password" placeholder="请输入登录口令" oninput="chencklength()">
+          <p class="help-block" id ="password1"><?= $pageLayout['userPasswordMsg'] ?></p>
+            <script language='javascript' type='text/javascript'>
+                // FIXME Bad Coding Style
+                function scorePassword(pass) {
+                    let score = 0;
+                    if (!pass)
+                        return score;
+
+                    // award every unique letter until 5 repetitions
+                     let letters = new Object();
+                    for (let i=0; i<pass.length; i++) {
+                        letters[pass[i]] = (letters[pass[i]] || 0) + 1;
+                        score += 5.0 / letters[pass[i]];
+                    }
+
+                    // bonus points for mixing it up
+                    let variations = {
+                        digits: /\d/.test(pass),
+                        lower: /[a-z]/.test(pass),
+                        upper: /[A-Z]/.test(pass),
+                        nonWords: /\W/.test(pass),
+                    };
+
+                    variationCount = 0;
+                    for (let check in variations) {
+                        variationCount += (variations[check] == true) ? 1 : 0;
+                    }
+                    score += (variationCount - 1) * 10;
+
+                    return parseInt(score);
+                }
+
+                function chencklength() {
+                    //if(true){
+                    let pwd = document.getElementById("iPassword").value;
+
+                    if (pwd.length >36 || pwd.length <6 ) {
+                        $('#password1').text("口令长度限制为6-36位");
+                        $('#iPasswordDiv').addClass('has-warning');
+                        $('#registerBtn').prop('disabled', true);
+                       // $("#iPassword").val("");
+                    }
+                   else {
+                        // input is valid -- reset the error message
+                        var score = scorePassword(pwd);
+                        if(score <60 ){
+                            $('#password1').text("密码强度过弱");
+                            $('#iPasswordDiv').addClass('has-warning');
+                            $('#registerBtn').prop('disabled', true);
+                        } else {
+                           if(score <80) {
+                               $('#password1').text('密码强度一般 可用');
+                           }else{
+                               $('#password1').text('密码强度高 可用');
+                           }
+                           $('#iPasswordDiv').removeClass('has-warning');
+                           $('#registerBtn').prop('disabled', false);
+
+                        }
+                    }
+                }
+
+            </script>
+
+
+
+
         </div>
+
+
         <div id="re-iPasswordDiv" class="form-group <?= $pageLayout['password-has-warning'] ?>">
           <label for="re-iPassword">确认口令</label>
           <input type="password" class="form-control" id="re-iPassword" name="password2" placeholder="请再次输入登录口令" onblur="checkRegister()" oninput="checkRegister()">
@@ -60,28 +162,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $('#password2prompt').text('<?=Prompt::$msg["password_not_same"]?>');
             $('#iPasswordDiv').addClass('has-warning');
             $('#re-iPasswordDiv').addClass('has-warning');
-            $('#registerBtn').prop('disabled', true);;
+            $('#registerBtn').prop('disabled', true);
         } else {
             // input is valid -- reset the error message
+            if()
             $('#password2prompt').text('');
             $('#iPasswordDiv').removeClass('has-warning');
             $('#re-iPasswordDiv').removeClass('has-warning');
-            $('#registerBtn').prop('disabled', false);;
+            $('#registerBtn').prop('disabled', false);
         }
     }
+
 </script>
         </div>
+
+
+
         <button type="submit" class="btn btn-primary btn-lg" id="registerBtn" name="register" disabled>注册</button>
       </div>
     </form>
   </div>
 
-  <div class="<?= $pageLayout['showRegMsgOrNot'] ?>">
-    <?php if($pageLayout['has-warning'] === false) { ?>
+
+<div class="<?= $pageLayout['showRegMsgOrNot'] ?>">
+    <?php
+
+    if($pageLayout['has-warning'] === false) {
+        ?>
     <a class="btn btn-link btn-lg" href="index.html" role="button"><?= $pageLayout['retMsg'] ?>登录</a>
-    <?php } else {?>
+    <?php
+    }
+    else {
+        ?>
     <a class="btn btn-link btn-lg" href="register.php" role="button"><?= $pageLayout['retMsg'] ?>注册</a>
-    <?php } ?>
+    <?php
+    } ?>
   </div>
 
   <script src="node_modules/jquery/dist/jquery.min.js"></script>

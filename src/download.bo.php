@@ -56,3 +56,22 @@ function download_file($id, $uid, $sess_privkey, $sess_passphrase) {
     return array('', $filename, $filesize, $decrypted_content);
 }
 
+
+
+
+function download_encryptedFile($id, $uid) {
+
+
+    try {
+        list($enc_key, $filename, $filesize, $sha256, $create_time) = getSavedCipherTextFromDb($id, $uid);
+    } catch(PDOException $e) {
+        $ret = [
+            Prompt::$msg['db_oops'],
+            '', '', ''
+        ];
+        return $ret;
+    }
+    $saved_ciphertext = file_get_contents(getUploadFilePath($uid, $sha256, $create_time));
+
+    return $saved_ciphertext;
+}
