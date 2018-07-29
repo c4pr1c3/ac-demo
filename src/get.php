@@ -96,10 +96,10 @@ HTML;
 
             if(empty($error)) {
                 updateDownloadCount($fid, $nonce);
-                $filename = $fileShareInfo['fname'];
+                $filename = $fileShareInfo['fname'].".zip";
                 $filesize = $fileShareInfo['size'];
                 header('Content-Description: Decrypted File Download');
-                header('Content-Disposition: attachment; filename="' . $filename . '"');
+                header('Content-Disposition: attachment; filename="' . $filename. '"');
                 header('Content-Transfer-Encoding: binary');
                 header('Expires: 0');
                 header('Cache-Control: must-revalidate, post-check=0, pre-check=0');

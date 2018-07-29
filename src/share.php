@@ -16,15 +16,15 @@ $uid = $_SESSION['uid'];
 // validate authorization
 if(validateUserFileOwnership($uid, $fid, $sha256)) {
   // encrypt shared file
-  list($err, $filename, $filesize, $decrypted_content) = download_file($fid, $uid, $_SESSION['privkey'], $_SESSION['passphrase']);
-
+  list($err, $filename, $filesize, $saved_c) = download_c_file($fid, $uid);
+	download_c_file($fid,$uid);
   $shareKey = bin2hex(openssl_random_pseudo_bytes(Config::$shareKeyLen)); // 对称加密秘钥，不进行持久化保存，仅返回给前端用户一次
   $shareKeyHash = password_hash($shareKey, PASSWORD_DEFAULT); // TODO 用户下载该加密文件时需要获得明文分享码并在数据库中校验一致才可进行文件加密秘钥解密
 
   $nonce = generateRandomString(Config::$nonceLen); // 区分相同分享文件的随机值
   $enc_key = base64_encode(openssl_random_pseudo_bytes(Config::$symmetricEncKeyLen)); // 对称加密秘钥，应妥善保存
   $enc_key_in_db = encryptFile($enc_key, $shareKey, 'enckey'); // TODO 保存到数据库中的已加密的分享文件加密秘钥
-  $encryptedFile = encryptFile($decrypted_content, $enc_key, $filename);
+  $encryptedFile = encryptFile($saved_c, $enc_key, $filename);
 
   $shareFilePath = getShareFilePath($uid, $sha256);
 
