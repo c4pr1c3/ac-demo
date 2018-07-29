@@ -16,6 +16,7 @@
       <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.2/html5shiv.js"></script>
       <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
+
 </head>
 
 <body>
@@ -65,11 +66,11 @@
         <tr>
           <th data-field="id">ID</th>
           <th data-field="name">文件名</th>
-          <th data-field="sha256">Sha256</th>
+          <th data-field="sodium_hash">Sodium_Hash</th>
           <th data-field="create_time">上传时间</th>
-          <th data-field="size">文件大小</th>
-          <th data-field="del"></th>
-          <th data-field="share"></th>
+          <th data-field="size">文件大小（字节）</th>
+          <th data-field="del">删除</th>
+          <th data-field="share">分享</th>
         </tr>
       </thead>
     </table>
@@ -93,7 +94,7 @@
 					</div>
 					<div class="panel panel-default">
 						<div class="panel-heading">
-							<h3 class="panel-title">文件大小</h3>
+							<h3 class="panel-title">文件大小（字节）</h3>
 						</div>
 						<div class="panel-body" id="fsize"></div>
 					</div>

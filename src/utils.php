@@ -19,6 +19,23 @@ function debug_log($msg, $file = '', $line = '', $output = '') {
     file_put_contents($output, $formatedMsg, FILE_APPEND);
 }
 
+function getKeyPairs($salt, $password){
+    $out_len = SODIUM_CRYPTO_SIGN_SEEDBYTES; //32
+    $seed = sodium_crypto_pwhash(
+        $out_len,
+        $password,
+        $salt,
+        SODIUM_CRYPTO_PWHASH_OPSLIMIT_INTERACTIVE, //4
+        SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE //33554432
+    );
+    
+    $encrypt_kp = sodium_crypto_box_seed_keypair($seed);
+    $sign_kp = sodium_crypto_sign_seed_keypair($seed);
+
+    return array('box' => $encrypt_kp, 'sign' => $sign_kp);
+}
+
+
 function getPubAndPrivKeys($userName, $password) {
   // 以下是最终使用的公钥证书中可以被查看的Distinguished Name（简称：DN）信息
 $dn = array(
@@ -40,12 +57,12 @@ $pk_config = array(
 // 产生公私钥对一套
 // 等价openssl命令
 // openssl genrsa -out server.key 2048
-$privkey = openssl_pkey_new($pk_config);
+$privkey = openssl_pkey_new($pk_config); //新的私钥
 
 // 查看生成的server.key的内容
 // openssl x509 -in server.key -text -noout
 // 给服务器安装使用的证书一般不使用口令保护，避免每次重启服务器时需要人工输入口令
-openssl_pkey_export($privkey, $pkeyout, $password);
+openssl_pkey_export($privkey, $pkeyout, $password); // 用口令加密私钥并导出到$pkeyout
 
 // 制作CSR文件：Certificate Signing Request
 // 等价openssl命令
@@ -57,6 +74,7 @@ $csr = openssl_csr_new($dn, $privkey, $pk_config);
 // 对CSR文件进行自签名（第2个参数设置为null，否则可以设置为CA的证书路径），设置证书有效期：365天
 // FIXME 证书有效期根据产品设计需要，可能需要保存到数据库中，定期更换用户的公私钥对
 // TODO 如果用户的公私钥对支持定期更换，则历史加密文件的对称加密秘钥在每次用户个人公私钥更换时需要先用历史秘钥解密一次
+
 // 再用新秘钥重新加密后保存
 $sscert = openssl_csr_sign($csr, null, $privkey, 365, $pk_config);
 // 以上所有代码的等价单行openssl命令
@@ -75,49 +93,91 @@ openssl_pkey_free($privkey);
 openssl_x509_export($sscert, $certout);
 
 return array(
-  'pubkey' => $certout,
-  'privkey' => $pkeyout
+  'pubkey' => $certout, //字符串形式的证书
+  'privkey' => $pkeyout //字符串形式的私钥
 );
 
 }
 
+// https://stackoverflow.com/questions/39904999/converting-string-in-php-to-be-used-as-file-name-without-stripping-special-cha#
+function base64_safe_encode($input, $stripPadding = false)
+{
+    $encoded = strtr(base64_encode($input), '+/=', '-_~');
 
-function encryptFile($input_file, $enc_key, $filename) {
-    if(!@is_file($input_file)) {
-        $plaintext = $input_file;
-    } else {
-        $plaintext = file_get_contents($input_file); // FIXME 对于大文件的加密，这种一次性读取明文的方式对内存的压力太大，应分片读取
-    }
-
-    $method = "aes-256-cbc"; // print_r(openssl_get_cipher_methods());
-    $enc_options = 0;
-    $iv_length = openssl_cipher_iv_length($method);
-    $iv = openssl_random_pseudo_bytes($iv_length);
-
-    $ciphertext = openssl_encrypt($plaintext, $method, $enc_key, $enc_options, $iv);
-
-    // 定义我们“私有”的密文结构
-    $saved_ciphertext = sprintf('%s$%d$%s$%s$%s', $method, $enc_options, bin2hex($iv), $filename, $ciphertext);
-
-    return $saved_ciphertext;
+    return ($stripPadding) ? str_replace("~","",$encoded) : $encoded;
 }
 
-function decryptFile($saved_ciphertext, $enc_key) {
+function base64_safe_decode($input)
+{
+    return base64_decode(strtr($input, '-_~', '+/='));
+}
 
-    if(@is_file($saved_ciphertext)) {
-        $saved_ciphertext = file_get_contents($saved_ciphertext);
+function encryptFile($input_file, $secret_key, $filename, $nonce){
+    // 判断是否是文件
+    try{
+        $re = @is_file($input_file);
+        if($re){
+            $plaintext = '';
+            $chunk_size = 4096;
+            $handle = fopen($input_file, "rb") or die("Couldn't get handle");
+            if($handle){
+                while(!feof($handle)){
+                    $buffer = fread($handle, $chunk_size);
+                    $plaintext .= $buffer;
+                }
+            }
+            fclose($handle);
+            if (sodium_crypto_aead_aes256gcm_is_available()) {
+                $ciphertext = sodium_crypto_aead_aes256gcm_encrypt(
+                    $plaintext,
+                    $filename,
+                    $nonce,
+                    $secret_key
+                );
+            }
+        }
+        else{
+            if (sodium_crypto_aead_aes256gcm_is_available()) {
+                 $ciphertext = sodium_crypto_aead_aes256gcm_encrypt(
+                    $input_file,
+                    $filename,
+                    $nonce,
+                    $secret_key
+                );
+            }
+        }
+    } catch(Exception $e){
+        return "error";
     }
-    // 检查密文格式是否正确、符合我们的定义
-    if(preg_match('/.*$.*$.*$.*$.*/', $saved_ciphertext) !== 1) {
+   
+    return $ciphertext;
+}
+
+function decryptFile($filename, $nonce, $encrypted_file, $secret_key) {
+    if (sodium_crypto_aead_aes256gcm_is_available()) {
+        $decrypted = sodium_crypto_aead_aes256gcm_decrypt(
+            $encrypted_file, // ciphertext
+            $filename, // ad
+            $nonce, // nonce
+            $secret_key
+        );
+        if ($decrypted === false) {
+            throw new Exception("Bad ciphertext");
+        }
+    }
+
+    return $decrypted;
+}
+
+function hashFileSodium($input_file){
+    if(!is_file($input_file)) {
         return false;
-    }
+    } else {
+        $content = file_get_contents($input_file);
+        $h = sodium_crypto_generichash($content);
 
-    // 解析密文结构，提取解密所需各个字段
-    //list($extracted_method, $extracted_enc_options, $extracted_iv, $extracted_filename, $extracted_ciphertext) = explode('$', $saved_ciphertext); 
-    $decryptedArr = explode('$', $saved_ciphertext); 
-
-    return openssl_decrypt($decryptedArr[4], $decryptedArr[0], $enc_key, $decryptedArr[1], hex2bin($decryptedArr[2]));
-
+        return $h;
+    }  
 }
 
 function getPagination($number, $pageSize) {
@@ -127,10 +187,11 @@ function getPagination($number, $pageSize) {
     return $start;
 }
 
-function getUploadFilePath($uid, $sha256, $create_time) {
+function getUploadFilePath($uid, $sodium_hash, $create_time) {
     $date = date_format(date_create($create_time), 'Y/m/d');
+
     $uploaddir = sprintf("%s/%s/%s", Config::$uploadRoot, $uid, $date);
-    $uploadfile = sprintf("%s/%s.enc", $uploaddir, $sha256);
+    $uploadfile = sprintf("%s/%s.enc", $uploaddir, $sodium_hash);
 
     return $uploadfile;
 }
@@ -144,11 +205,11 @@ function getMasterKey(&$masterKey) {
     return true;
 }
 
-function getShareFilePath($uid, $sha256) {
+function getShareFilePath($uid, $sodium_hash) {
     $datetime = date('Y-m-d H:i:s');
     $date = date_format(date_create(), 'Y/m/d/H/i/s');
     $shareDir = sprintf("%s/%s/%s", Config::$shareRoot, $uid, $date);
-    $shareFile = sprintf("%s/%s.enc", $shareDir, $sha256);
+    $shareFile = sprintf("%s/%s.enc", $shareDir, $sodium_hash);
 
     return $shareFile;
 }
@@ -186,4 +247,3 @@ function getUriRoot() {
 
     return $uriRoot;
 }
-

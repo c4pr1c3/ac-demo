@@ -9,18 +9,19 @@ function connectDb() {
     $charset = "utf8mb4";
     $options = array(
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_PERSISTENT => true
+        // PDO::ATTR_PERSISTENT => true
     );
     $conn = new PDO("mysql:host=$servername;dbname=$dbname;charset=$charset", $username, $password, $options);
     return $conn;
 }
 
-function checkRegisterInDb($name) {
+function checkRegisterInDb($name, $email) {
     try {
         $conn = connectDb();
-        $sql = "select password from users where name=:name";
+        $sql = "select password from users where name=:name or email=:email"; //prevent SQL injection
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':name', $name);
+        $stmt->bindParam(':email',$email);
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return isset($result['password']) ? $result['password'] : '';
@@ -29,15 +30,16 @@ function checkRegisterInDb($name) {
     }
 }
 
-function registerInDb($name, $password, $pubkey, $privkey) {
+function registerInDb($name, $email, $password, $salt, $nonce) {
     try {
         $conn = connectDb();
-        $sql = "INSERT INTO users (name, password, pubkey, privkey) VALUES (:name, :password, :pubkey, :privkey)";
+        $sql = "INSERT INTO users (name, email, password, salt, nonce) VALUES (:name, :email, :password, :salt, :nonce)";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':name', $name);
+        $stmt->bindParam('email', $email);
         $stmt->bindParam(':password', $password);
-        $stmt->bindParam(':pubkey', $pubkey);
-        $stmt->bindParam(':privkey', $privkey);
+        $stmt->bindParam(':salt', $salt);
+        $stmt->bindParam(':nonce', $nonce);
         return $stmt->execute();
 
     } catch(PDOException $e) {
@@ -59,15 +61,16 @@ function getUserInfoInDb($name) {
     }
 }
 
-function uploadFileInDb($name, $size, $enckey, $sha256, $uid, $datetime) {
+function uploadFileInDb($name, $size, $enckey, $sodium_hash, $nonce, $uid, $datetime) {
     try {
         $conn = connectDb();
-        $sql = "INSERT INTO files (name, size, enckey, sha256, uid, create_time) VALUES (:name, :size, :enckey, :sha256, :uid, :datetime)";
+        $sql = "INSERT INTO files (name, size, enckey, sodium_hash, nonce, uid, create_time) VALUES (:name, :size, :enckey, :sodium_hash, :nonce, :uid, :datetime)";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':name', $name);
         $stmt->bindParam(':size', $size);
         $stmt->bindParam(':enckey', $enckey);
-        $stmt->bindParam(':sha256', $sha256);
+        $stmt->bindParam(':sodium_hash', $sodium_hash);
+        $stmt->bindParam(':nonce', $nonce);
         $stmt->bindParam(':uid', $uid);
         $stmt->bindParam(':datetime', $datetime);
         $result = $stmt->execute();
@@ -103,9 +106,9 @@ function listFilesInDb($uid, $start, $count, $search = '') {
     try {
         $conn = connectDb();
         if(empty($search)) {
-            $sql = "select id, name, size, sha256, create_time from files where uid=:uid limit :start , :count";
+            $sql = "select id, name, size, sodium_hash, create_time from files where uid=:uid limit :start , :count";
         } else {
-            $sql = "select id, name, size, sha256, create_time from files where uid=:uid and name like :search limit :start , :count";
+            $sql = "select id, name, size, sodium_hash, create_time from files where uid=:uid and name like :search limit :start , :count";
         }
 
         $stmt = $conn->prepare($sql);
@@ -127,25 +130,25 @@ function listFilesInDb($uid, $start, $count, $search = '') {
 function getSavedCipherTextFromDb($id, $uid) {
     try {
         $conn = connectDb();
-        $sql = "select enckey, name, size, sha256, create_time from files where uid=:uid and id=:id";
+        $sql = "select enckey, name, size, sodium_hash, nonce, create_time from files where uid=:uid and id=:id";
 
         $stmt = $conn->prepare($sql);
         $stmt->bindValue(':uid', (int)$uid, PDO::PARAM_INT);
         $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return array($result['enckey'], $result['name'], $result['size'], $result['sha256'], $result['create_time']);
+        return array(trim($result['enckey']), trim($result['name']), trim($result['size']), trim($result['sodium_hash']), trim($result['nonce']), trim($result['create_time']));
     } catch(PDOException $e) {
         throw $e;
     }
 }
 
-function findDuplicateFileInDb($sha256) {
+function findDuplicateFileInDb($sodium_hash) {
     try {
         $conn = connectDb();
-        $sql = "select count(id) as dup from files where sha256=:sha256";
+        $sql = "select count(id) as dup from files where sodium_hash=:sodium_hash";
         $stmt = $conn->prepare($sql);
-        $stmt->bindParam(':sha256', $sha256, PDO::PARAM_STR);
+        $stmt->bindParam(':sodium_hash', $sodium_hash, PDO::PARAM_STR);
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return $result['dup'];
@@ -154,26 +157,26 @@ function findDuplicateFileInDb($sha256) {
     }
 }
 
-function deleteFileInDb($sha256, $uid) {
+function deleteFileInDb($sodium_hash, $uid) {
     try {
         $conn = connectDb();
-        $sql = "delete from files where sha256=:sha256 and uid=:uid";
+        $sql = "delete from files where sodium_hash=:sodium_hash and uid=:uid";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':uid', $uid, PDO::PARAM_INT);
-        $stmt->bindParam(':sha256', $sha256, PDO::PARAM_STR);
+        $stmt->bindParam(':sodium_hash', $sodium_hash, PDO::PARAM_STR);
         return $stmt->execute();
     } catch(PDOException $e) {
         throw $e;
     }
 }
 
-function findFileByShasumAndUid($sha256, $uid) {
+function findFileByHashAndUid($sodium_hash, $uid) {
     try {
         $conn = connectDb();
-        $sql = "select create_time from files where sha256=:sha256 and uid=:uid";
+        $sql = "select create_time from files where sodium_hash=:sodium_hash and uid=:uid";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':uid', $uid, PDO::PARAM_INT);
-        $stmt->bindParam(':sha256', $sha256, PDO::PARAM_STR);
+        $stmt->bindParam(':sodium_hash', $sodium_hash, PDO::PARAM_STR);
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return isset($result['create_time']) ? $result['create_time'] : NULL;
@@ -182,14 +185,14 @@ function findFileByShasumAndUid($sha256, $uid) {
     }
 }
 
-function validateUserFileOwnershipInDb($uid, $fid, $sha256) {
+function validateUserFileOwnershipInDb($uid, $fid, $sodium_hash) {
     try {
         $conn = connectDb();
-        $sql = "select count(id) as has_ownership from files where id=:fid and uid=:uid and sha256=:sha256";
+        $sql = "select count(id) as has_ownership from files where id=:fid and uid=:uid and sodium_hash=:sodium_hash";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':uid', $uid, PDO::PARAM_INT);
         $stmt->bindParam(':fid', $fid, PDO::PARAM_INT);
-        $stmt->bindParam(':sha256', $sha256, PDO::PARAM_STR);
+        $stmt->bindParam(':sodium_hash', $sodium_hash, PDO::PARAM_STR);
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return $result['has_ownership'];
@@ -217,7 +220,7 @@ function saveShareFileInfoInDb($fid, $shareKeyHash, $enc_key_in_db, $shareFilePa
 function getFileShareInfoFromDb($fid, $nonce) {
     try {
         $conn = connectDb();
-        $sql = "select users.name as uname, dcount, sharekey, share.enckey as enckey, filepath, files.name as fname, size from share left join files on share.fid=files.id left join users on files.uid=users.id where fid=:fid and nonce=:nonce";
+        $sql = "select users.name as uname, dcount, sharekey, share.enckey as enckey, filepath, files.name as fname, size, share.nonce as nonce from share left join files on share.fid=files.id left join users on files.uid=users.id where fid=:fid and share.nonce=:nonce";
 
         $stmt = $conn->prepare($sql);
         $stmt->bindValue(':fid', (int)$fid, PDO::PARAM_INT);
@@ -243,5 +246,119 @@ function updateDownloadCountInDb($fid, $nonce) {
     }
 }
 
+// 找回密码
+function getResetFromDb($email) {
+    try {
+        $conn = connectDb();
+        $sql = "select email from users where email=:email";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bindValue(':email', $email);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    } catch(PDOException $e) {
+        throw $e;
+    }
+}
+
+function getFileLinkInfoFromDb($email){
+    try{
+        $conn = connectDb();
+        $sql = "select id as id from users where email = :email";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindValue(':email',$email);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }catch(PDOException $e){
+        throw $e;
+    }
+}
+
+function updateCheckTime($email, $flag){
+    try {
+        $conn = connectDb();
+        if ($flag==0) {
+            $sql = "update users set update_time=now() where email = :email";
+            $stmt = $conn->prepare($sql);
+            $stmt->bindParam(':email', $email);
+            return $stmt->execute();
+        }
+        else if($flag==1){
+            $sql = "update users set update_time=NULL where email = :email";
+            $stmt = $conn->prepare($sql);
+            $stmt->bindParam(':email', $email);
+            return $stmt->execute();
+        }
+    } catch(PDOException $e) {
+        throw $e;
+    }
+}
+
+function findCheckTime($email){
+    try {
+        $conn = connectDb();
+        $sql = "select UNIX_TIMESTAMP(update_time) as time from users where email = :email";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindValue(':email',$email);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch(PDOException $e) {
+        throw $e;
+    }
+}
+
+function updateResetUsers($email, $hashedPassword, $salt, $nonce) {
+    try {
+        $conn = connectDb();
+        $sql = "update users set password = :hashedPassword, nonce = :nonce, salt = :salt where email=:email";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':hashedPassword',$hashedPassword);
+        $stmt->bindParam(':nonce',$nonce);
+        $stmt->bindParam(':salt',$salt);
+        return $stmt->execute();
+
+    } catch(PDOException $e) {
+        throw $e;
+    }
+}
 
 
+function saveToken($email, $token) {
+    try {
+        $conn = connectDb();
+        $sql = "update users set token = :token where email=:email";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':email',$email);
+        $stmt->bindParam(':token', $token);
+        return $stmt->execute();
+    } catch(PDOException $e) {
+        throw $e;
+    }
+}
+
+function updateTokenCountInDb1($email) {
+    try {
+        $conn = connectDb();
+        $sql = "update users set token = NULL where email=:email";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':email', $email);  
+        return $stmt->execute();
+    } catch(PDOException $e) {
+        throw $e;
+    }
+}
+
+function checkTokenCountInDb($email,$token) {
+    try {      
+        $conn = connectDb();
+        $sql = "select token as token from users where email = :email and token = :token";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindValue(':email',$email);
+        $stmt->bindValue(':token',$token);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch(PDOException $e) {
+        throw $e;
+    }
+}

@@ -25,7 +25,17 @@
       <div class="form-group">
         <div class="form-group">
           <label for="iUserName"></label>
-          <input type="email" class="form-control" id="iUserName" name="userName" placeholder="请输入用户名" autofocus required maxlength="128">
+          <input type="text" class="form-control" id="iUserName" name="userName" placeholder="请输入用户名" autofocus required maxlength="128">
+          <script type="text/javascript">
+            function autoName(){
+              var url = window.location.href;
+              if(url.indexOf('name')>=0){
+                var name = url.split('=');          
+                document.getElementById("iUserName").value = name[1];
+              }
+            }
+            autoName();
+          </script>
         </div>
         <div class="form-group">
           <label for="iPassword"></label>
@@ -34,6 +44,7 @@
         </div>
         <button type="submit" class="btn btn-primary btn-lg" name="login">登录</button>
         <a class="btn btn-link btn-lg" href="register.php" role="button">注册</a>
+        <a class="btn btn-link btn-lg" href="find.php" role="button">找回密码</a>
       </div>
     </form>
   </div>
@@ -65,7 +76,7 @@
     </nav>
     <!--  文件上传表单 -->
       <label class="control-label">上传文件到云盘</label>
-      <input id="uploadFiles" name="cucFiles[]" type="file" multiple class="file file-loading" data-allowed-file-extensions='["doc", "docx", "xls", "xlsx", "ppt", "pptx", "zip", "pdf"]'>
+      <input id="uploadFiles" name="cucFiles[]" type="file" multiple class="file file-loading" data-allowed-file-extensions='["doc", "docx", "xls", "xlsx", "ppt", "pptx", "zip", "pdf", "png", "jpg", "jpeg", "gif", "bmp", "svg", "ico"]'>
       <p class="help-block">请选择10MB以下大小的文件，一次最多上传5个文件</p>
 
   </div>
@@ -78,6 +89,7 @@
   <script src="node_modules/bootstrap-fileinput/js/locales/zh.js"></script>
   <script src="js/login.js"></script>
   <script src="js/upload.js"></script>
+    <script src="js/sodium.js" async></script>
 </body>
 
 </html>
