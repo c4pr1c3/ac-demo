@@ -11,12 +11,13 @@ services:
       MYSQL_ROOT_PASSWORD: example
 
   php:
-    image: cuc_ac_demo_php:1.0
+    image: cuc_ac_demo_php:1.1
     restart: always
     networks:
       - overlay
     ports:
       - 8080:80
+      - 4430:443
     volumes:
       - ../src:/var/www/html
     environment:

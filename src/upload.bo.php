@@ -7,9 +7,9 @@ require 'db.php';
 function doFileTypeFilter() {
 	$allowed_types = array('doc', 'docx', 'xls','xlsx','ppt','pptx','zip','pdf','jpg','jpeg','bmp','png');
 	$filename = $_FILES['cucFiles']['name'];	
-	$ext = strtolower($ext[1]);
-	if(!in_array($ext, $allowed_types)){
-		return false;
+	$ext1 = strtolower($ext[1]);
+	if(!in_array($ext1, $allowed_types)){
+		return $filename;
 	}
 	else
 	{
@@ -30,11 +30,17 @@ function doFileUpload() {
             ];
             return $ret;
         }
-		if(!doFileTypeFilter())
+		$tep = doFileTypeFilter();
+
+		if($tep!=true)
 		{
-			$ret = ['error'=>"文件格式不符合"];
+			$tep = $tep."文件格式不符";
+			$ret = ['error'=>$tep];
 			return $ret;
 		}
+//		$tep = doFileTypeFilter();
+//		$ret = ['error'=>$tep];
+//		return $ret;
 
         // TODO 文件“秒传”功能依赖于客户端先上传sha256校验和，未找到相同散列值再上传文件
         // TODO 文件“秒传”功能对于文件在文件系统上采用加密存储机制来说是“无法完全实现”的
@@ -77,11 +83,9 @@ function doFileUpload() {
                 'error' => Prompt::$msg['upload_enc_failed']
             ];
             return $ret;
-        }
-
-        // http://php.net/manual/zh/features.file-upload.post-method.php
-        // 构造文件保存路径
-        $uid = $_SESSION['uid'];
+		} // http://php.net/manual/zh/features.file-upload.post-method.php 
+		// 构造文件保存路径
+		$uid = $_SESSION['uid'];
         $datetime = date('Y-m-d H:i:s');
         $uploadfile = getUploadFilePath($uid, $sha256, $datetime);
         $uploaddir = dirname($uploadfile);
@@ -99,9 +103,16 @@ function doFileUpload() {
         // 清理文件名中可能会包含的$
         $filename = base64_encode($files['name'][$i]);
         $encryptedFile = encryptFile($files['tmp_name'][$i], $enc_key, $filename);
-
+		//用服务器私钥对数据进行签名
+		$myfile = fopen("/CA/apache.key", "r");	
+		$ser_pri_key_d = fread($myfile,filesize("/CA/apache.key"));
+		fclose($myfile);
+		$ser_prikey = openssl_pkey_get_private($ser_pri_key_d);
+		openssl_sign($encryptedFile,$encrypedFile_sign,$ser_prikey);
+		//------------------------
+	
         if($encryptedFile !== false) {
-            if(file_put_contents($uploadfile, $encryptedFile) !== false) {
+            if(file_put_contents($uploadfile, $encryptedFile) !== false && file_put_contents($uploadfile."_sign",$encrypedFile_sign)!==false) {
                 try {
                     if(!uploadFileInDb($uploadFileName, filesize($files['tmp_name'][$i]), base64_encode($enc_key_in_db), $sha256, $uid, $datetime)) {
                         $ret = [

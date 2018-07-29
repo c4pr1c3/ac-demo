@@ -51,7 +51,9 @@ function download_file($id, $uid, $sess_privkey, $sess_passphrase) {
 
     $saved_ciphertext = file_get_contents(getUploadFilePath($uid, $sha256, $create_time));
 
-    $decrypted_content = decryptFile($saved_ciphertext, $n_enc_key);
+	$decrypted_content = decryptFile($saved_ciphertext, $n_enc_key);
+
+
 
     return array('', $filename, $filesize, $decrypted_content);
 }
