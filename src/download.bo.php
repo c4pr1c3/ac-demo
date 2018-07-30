@@ -51,8 +51,29 @@ function download_file($id, $uid, $sess_privkey, $sess_passphrase) {
 
     $saved_ciphertext = file_get_contents(getUploadFilePath($uid, $sha256, $create_time));
 
-    $decrypted_content = decryptFile($saved_ciphertext, $n_enc_key);
+	$decrypted_content = decryptFile($saved_ciphertext, $n_enc_key);
+
+
 
     return array('', $filename, $filesize, $decrypted_content);
 }
+//获取加密文件和其签名
+function download_c_file($id,$uid)
+{
+	list($enc_key, $filename, $filesize, $sha256, $create_time) = getSavedCipherTextFromDb($id, $uid);
+	$filelist = array(
+		getUploadFilePath($uid, $sha256, $create_time),
+		getUploadFilePath($uid, $sha256, $create_time)."_sign"
+	);
+		$file_path = getUploadFilePath($uid, $sha256, $create_time).".zip";
 
+	$zip = new ZipArchive();
+	$zip->open($file_path,ZipArchive::CREATE);   //打开压缩包
+	foreach($filelist as $file){
+    $zip->addFile($file,basename($file));   //向压缩包中添加文件
+}
+	$zip->close();  //关闭压缩包
+	$saved_C = file_get_contents(getUploadFilePath($uid, $sha256, $create_time).".zip");
+	return array('',$filename,$filesize,$saved_C);
+
+}

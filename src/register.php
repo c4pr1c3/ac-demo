@@ -82,11 +82,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php } else {?>
     <a class="btn btn-link btn-lg" href="register.php" role="button"><?= $pageLayout['retMsg'] ?>注册</a>
     <?php } ?>
-  </div>
-
-  <script src="node_modules/jquery/dist/jquery.min.js"></script>
-  <!-- Include all compiled plugins (below), or include individual files as needed -->
-  <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
-</body>
-
-</html>
+  </div> <script src="node_modules/jquery/dist/jquery.min.js"></script> <!-- Include all compiled plugins (below), or include individual files as needed --> <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script> </body> </html>

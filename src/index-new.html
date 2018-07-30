@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> 
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小灯网盘</title>
+
+ <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+   <link rel="stylesheet" href="node_modules/bootstrap-fileinput/css/fileinput.min.css">
+   <link rel="stylesheet" href="node_modules/bootstrap-table/dist/bootstrap-table.min.css">
+<style type="text/css">
+    .center{text-align: center;}
+    .login-page {
+      width: 360px;
+      padding: 8% 0 0;
+      margin: auto;
+    }
+	.file-page{
+      width: 55%;
+      padding: 8% 0 0;
+      margin: auto;
+	}
+	.file-bck{
+      position: relative;
+      z-index: 1;
+      background: #FFFFFF;
+      max-width: 100%;
+      margin: 0 auto 100px;
+      padding: 45px;
+      text-align: center;
+      box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
+	}
+    .file-bck-button {
+      font-family: "Microsoft YaHei","Roboto", sans-serif;
+      text-transform: uppercase;
+      outline: 0;
+      background: #4CAF50;
+      width: 100%;
+      border: 1px;
+	  border-style:solid;
+      padding: 15px;
+      color: #FFFFFF;
+      font-size: 14px;
+      -webkit-transition: all 0.3 ease;
+      transition: all 0.3 ease;
+      cursor: pointer;
+    }
+    .file-bck-button:hover,.file-bck-button:active,.file-bck-button:focus {
+      background: #43A047;
+    }
+    .form {
+      position: relative;
+      z-index: 1;
+      background: #FFFFFF;
+      max-width: 360px;
+      margin: 0 auto 100px;
+      padding: 45px;
+      text-align: center;
+      box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
+    }
+    .form input {
+      font-family: "Roboto", sans-serif;
+      outline: 0;
+      background: #f2f2f2;
+      width: 100%;
+      border: 0;
+      margin: 0 0 15px;
+      padding: 15px;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+    .form button {
+      font-family: "Microsoft YaHei","Roboto", sans-serif;
+      text-transform: uppercase;
+      outline: 0;
+      background: #4CAF50;
+      width: 100%;
+      border: 0;
+      padding: 15px;
+      color: #FFFFFF;
+      font-size: 14px;
+      -webkit-transition: all 0.3 ease;
+      transition: all 0.3 ease;
+      cursor: pointer;
+    }
+    .form button:hover,.form button:active,.form button:focus {
+      background: #43A047;
+    }
+    .form .message {
+      margin: 15px 0 0;
+      color: #b3b3b3;
+      font-size: 12px;
+    }
+    .form .message a {
+      color: #4CAF50;
+      text-decoration: none;
+    }
+    .form .register-form {
+      display: none;
+    }
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 300px;
+      margin: 0 auto;
+    }
+    .container:before, .container:after {
+      content: "";
+      display: block;
+      clear: both;
+    }
+    .container .info {
+      margin: 50px auto;
+      text-align: center;
+    }
+    .container .info h1 {
+      margin: 0 0 15px;
+      padding: 0;
+      font-size: 36px;
+      font-weight: 300;
+      color: #1a1a1a;
+    }
+    .container .info span {
+      color: #4d4d4d;
+      font-size: 12px;
+    }
+    .container .info span a {
+      color: #000000;
+      text-decoration: none;
+    }
+    .container .info span .fa {
+      color: #EF3B3A;
+    }
+    body {
+      background: #76b852; /* fallback for old browsers */
+      background: -webkit-linear-gradient(right, #76b852, #8DC26F);
+      background: -moz-linear-gradient(right, #76b852, #8DC26F);
+      background: -o-linear-gradient(right, #76b852, #8DC26F);
+      background: linear-gradient(to left, #76b852, #8DC26F);
+      font-family: "Roboto", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;      
+    }
+    .shake_effect{
+        -webkit-animation-name: shake;
+        animation-name: shake;
+        -webkit-animation-duration: 1s;
+        animation-duration: 1s;
+    }
+    @-webkit-keyframes shake {
+      from, to {
+        -webkit-transform: translate3d(0, 0, 0);
+        transform: translate3d(0, 0, 0);
+      }
+
+      10%, 30%, 50%, 70%, 90% {
+        -webkit-transform: translate3d(-10px, 0, 0);
+        transform: translate3d(-10px, 0, 0);
+      }
+
+      20%, 40%, 60%, 80% {
+        -webkit-transform: translate3d(10px, 0, 0);
+        transform: translate3d(10px, 0, 0);
+      }
+    }
+
+    @keyframes shake {
+      from, to {
+        -webkit-transform: translate3d(0, 0, 0);
+        transform: translate3d(0, 0, 0);
+      }
+
+      10%, 30%, 50%, 70%, 90% {
+        -webkit-transform: translate3d(-10px, 0, 0);
+        transform: translate3d(-10px, 0, 0);
+      }
+
+      20%, 40%, 60%, 80% {
+        -webkit-transform: translate3d(10px, 0, 0);
+        transform: translate3d(10px, 0, 0);
+      }
+    }
+    p.center{
+        color: #fff;font-family: "Microsoft YaHei";
+    }
+</style>
+
+</head>
+<body>
+<div class="htmleaf-container">
+    <div id="wrapper" class="login-page">
+      <div id="login_form" class="form">
+        <form class="register-form">
+			<input type="email" placeholder="邮箱" id="r_user_name" autofocus required maxlength = "128" oninput = "checkInDb()" onblur = "checkInDb()"/>
+			<p id = "uname_warning" style = "color:red;display:none;" >该用户名已注册</p>
+          <input type="password" placeholder="请输入口令" id="r_password" oninput="checkRegister()" />
+		  <p id = "pwd_warning"  style = "color:red;display:none;" >两次密码不相同</p>
+		  <p id = "pwd_invalid" style = "color:red;display:none;" >请输入8位以上36位以下包含数字字母的密码</p>
+          <input type="password" placeholder="请再此输入登录口令" id="r_2password" onblur="checkRegister()" oninput="checkRegister()"/>
+		  <p id = "pwd2_warning" style = "color:red;display:none;">两次密码不相同</p>
+		  <p id = "pwd2_invalid" style = "color:red;display:none;">请输入8位以上36位以下包含数字字母的密码</p>
+          <button id="create">创建账户</button>
+          <p class="message">已经有了一个账户? <a href="#">立刻登录</a></p>
+        </form>
+        <form class="login-form">
+          <input type="text" placeholder="用户名" id="user_name"/>
+          <input type="password" placeholder="密码" id="password"/>
+          <button id="login" tpye = "sumbit">登　录</button>
+          <p class="message">还没有账户? <a href="#">立刻创建</a></p>
+        </form>
+      </div>
+    </div>
+
+	<div id = "wrapper2" class = "file-page" style = "display:none;">
+		<div id = "file_div" class = "file-bck">
+			<div>
+			<span id = 'loggedInUserNameId' style = "float:left;text-align:left;font-size:23.4px">你好</span>
+			<span style = "float:right;text-align:right; font-size:23.4px"><a href = "logout.php">注销</a></span>
+			</div>
+			<div>
+			<button id = "up_button" class = "file-bck-button">文件上传</button>
+			<button id = "list_button" class = "file-bck-button">文件列表</button>
+			</div>
+			<div id = "up-page">
+		       <input id="uploadFiles" name="cucFiles[]" type="file" multiple class="file file-loading" data-allowed-file-extensions='["doc", "docx", "xls", "xlsx", "ppt", "pptx", "zip", "pdf","jpg","jpeg","png","bmp"]'>
+				<p>请选择10MB以下大小的文件，一次最多上传5个文件</p>
+			</div>
+			<div id = "dl-page" style = "display:none;">
+				<div class="span12 text-center">
+					<div id="delTooltip" class="span12 text-center" role="alert"></div>
+				</div>	
+    <table id="files-table" 
+      data-toggle="table" 
+      data-side-pagination="server"
+      data-url="/list.php"
+      data-height="600"
+      data-side-pagination="server"
+      data-pagination="true"
+      data-page-list="[3, 5, 10]"
+      data-search="true">
+      <thead>
+        <tr>
+          <th data-field="id">ID</th>
+          <th data-field="name">文件名</th>
+          <th data-field="sha256">Sha256</th>
+          <th data-field="create_time">上传时间</th>
+          <th data-field="size">文件大小</th>
+          <th data-field="del"></th>
+          <th data-field="share"></th>
+        </tr>
+      </thead>
+    </table>
+	
+			</div>
+		</div>
+
+	</div>
+	
+</div>
+
+<div class="modal fade" id="shareModal" tabindex="-1" role="dialog" aria-labelledby="shareModalLabel">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="shareModalLabel">分享文件设置</h4>
+			</div>
+			<div class="modal-body">
+				<form id="shareForm">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title">文件名</h3>
+						</div>
+						<div class="panel-body" id="fsname"></div>
+					</div>
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title">文件大小</h3>
+						</div>
+						<div class="panel-body" id="fsize"></div>
+					</div>
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title">上传时间</h3>
+						</div>
+						<div class="panel-body" id="fstime"></div>
+					</div>
+					<div class="form-group">
+						<label for="allowed_download_count" class="control-label">可被下载次数:</label>
+						<input type="text" class="form-control" id="allowed_download_count" name="allowed_download_count"/>
+					</div>
+					<div class="form-group">
+						<label for="expire_hours" class="control-label">过期时间（从现在起几个小时）:</label>
+						<input type="text" class="form-control" id="expire_hours" name="expire_hours"/>
+					</div>
+						<input type="hidden" name="fid" id="fid"/>
+						<input type="hidden" name="fkey" id="fkey"/>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">暂时不分享</button>
+						<input type="submit" class="btn btn-primary" value="确定分享"/>
+				</div>
+			</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="shareResultModal" tabindex="-1" role="dialog" aria-labelledby="shareResultModalLabel">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="shareResultModalLabel">分享文件结果</h4>
+			</div>
+			<div class="modal-body">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title">请复制以下分享链接及密码</h3>
+						</div>
+						<div class="panel-body" id="sharedLink"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+  <script src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="node_modules/jquery.cookie/jquery.cookie.js" charset="utf-8"></script>
+	<script src="node_modules/bootstrap-table/dist/bootstrap-table.min.js"></script>
+	  <script src="node_modules/bootstrap-table/dist/locale/bootstrap-table-zh-CN.min.js"></script>
+	  <!-- Include all compiled plugins (below), or include individual files as needed -->
+	    <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+		  <script src="node_modules/bootstrap-fileinput/js/fileinput.min.js"></script>
+		    <script src="node_modules/bootstrap-fileinput/js/locales/zh.js"></script>
+			<script src = "js/login_t.js"></script>
+			
+			<script src = "js/list.js"></script>
+			<script src = "js/upload.js"></script>
+<script type="text/javascript">
+
+
+function checkInDb()
+{
+	console.log("fuck");
+	var uname = $('#r_user_name').val();
+	$.ajax({
+		url : "checkusername.php",
+		data : {u:uname},
+		type:"POST",
+		dataType:"TEXT",
+		success:function(data){
+			if(data.trim() == "NO")
+			{
+				console.log("fuck");
+				$('#uname_warning').animate({
+				height:'show',	
+				opacity:'show'	
+				},'fast');
+			}
+			else
+			{
+				$('#uname_warning').animate({
+				height:'hide',	
+				opacity:'hide'	
+				},'fast');
+			}
+		
+		
+		
+		}
+	});
+}
+function isInvalid(pwd)
+{
+	if(pwd.length<8 || pwd.length >36)return true;
+	else
+	{
+		var p1 = /[0-9]/;
+		var p2 = /[a-zA-Z]/;
+		if(p1.test(pwd) && p2.test(pwd)){return false;}
+		else {return true;}
+	}
+}
+function checkRegister()
+{
+	var pwd1 = $('#r_password').val();
+	var pwd2 = $('#r_2password').val();
+	if(pwd1!=pwd2){
+	$('#pwd_warning').animate({
+		height:'show',
+		opacity:'show'
+	},'fast');
+	$('#pwd2_warning').animate({
+		height:'show',
+		opacity:'show'
+	},'fast');
+
+	$('#pwd_invalid').animate({
+		height:'hide',
+		opacity:'hide'
+	},'fast');
+	$('#pwd2_invalid').animate({
+		height:'hide',
+		opacity:'hide'
+	},'fast');
+	$('#create').attr('disabled',true);
+	}
+	else if(isInvalid(pwd2))
+	{
+		
+	$('#pwd_warning').animate({
+		height:'hide',
+		opacity:'hide'
+	},'fast');
+	$('#pwd2_warning').animate({
+		height:'hide',
+		opacity:'hide'
+	},'fast');
+	
+	$('#pwd_invalid').animate({
+		height:'show',
+		opacity:'show'
+	},'fast');
+	$('#pwd2_invalid').animate({
+		height:'show',
+		opacity:'show'
+	},'fast');
+	$('#create').attr('disabled',true);
+	}
+	else
+	{
+		
+	$('#pwd_warning').animate({
+		height:'hide',
+		opacity:'hide'
+	},'fast');
+	$('#pwd2_warning').animate({
+		height:'hide',
+		opacity:'hide'
+	},'fast');
+	
+	$('#pwd_invalid').animate({
+		height:'hide',
+		opacity:'hide'
+	},'fast');
+	$('#pwd2_invalid').animate({
+		height:'hide',
+		opacity:'hide'
+	},'fast');
+	$('#create').attr('disabled',false);
+	}
+}
+
+function check_login()
+{
+ //var name=$("#user_name").val();
+ //var pass=$("#password").val();
+ //else
+ //{
+  //$("#login_form").removeClass('shake_effect');  
+  //setTimeout(function()
+  //{
+   //$("#login_form").addClass('shake_effect')
+  //},1);  
+ //}
+
+        $('#wrapper').animate({
+            opacity: 'hide',
+			height:'hide'
+        }, 'fast');
+
+        $('#wrapper2').animate({
+            height: 'show',
+            opacity: 'show'
+        }, 'slow');
+
+}
+function check_register(){
+    var name = $("#r_user_name").val();
+    var pass = $("#r_password").val();
+    var email = $("r_email").val();
+	$.ajax({
+		url:"register_t.php",
+		data:{userName:name,password:pass},
+		type:"POST",
+		dataType:"TEXT",
+		success:function(data){
+			if(data.trim() == "YES")
+			{
+				alert("注册成功！");
+			}	
+			else
+			{
+			  $("#login_form").removeClass('shake_effect');  
+			  setTimeout(function()
+			  {
+			   $("#login_form").addClass('shake_effect')
+			  },1);  
+			  alert("注册失败");
+			}
+		}
+	
+	});
+}
+$(function(){
+	$('#up_button').click(function(){
+        $('#up-page').animate({
+            height: 'show',
+            opacity: 'show'
+        }, 'slow');
+
+		$('#dl-page').animate({
+			height: 'hide',
+			opacity: 'hide'
+		}, 'slow');
+	})
+	$('#list_button').click(function(){
+		$('#files-table').bootstrapTable('refresh',{url:'/list.php'});
+        $('#up-page').animate({
+            height: 'hide',
+            opacity: 'hide'
+        }, 'slow');
+		$('#dl-page').animate({
+			height: 'show',
+			opacity: 'show'
+		}, 'slow');
+		
+		})	
+	
+    $("#create").click(function(){
+        check_register();
+        return false;
+    })
+    $('.message a').click(function () {
+        $('form').animate({
+            height: 'toggle',
+            opacity: 'toggle'
+        }, 'slow');
+    });
+})
+</script>
+</body>
+</html>

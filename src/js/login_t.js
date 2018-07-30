@@ -1,7 +1,15 @@
+
 function showUploadForm() {
-    $('#loginFormDiv').addClass('hidden');
-    $('#mainFormDiv').removeClass('hidden').addClass('container');
-    $('#loggedInUserNameId').text($.cookie('loggedInUser'));
+
+					$('#wrapper').animate({
+						opacity: 'hide',
+						height:'hide'
+					}, 'fast');
+
+					$('#wrapper2').animate({
+						height: 'show',
+						opacity: 'show'
+					}, 'slow');
 }
 
 
@@ -31,23 +39,23 @@ function checkLogin() {
 
 $(document).ready(function() {
     if($.cookie('userName') != undefined) {
-        $('#iUserName').val($.cookie('userName'));
+        $('#user_name').val($.cookie('userName'));
     }
-    if($('#iUserName').val() != '') {
-        $('#iPassword').focus();
+    if($('#uaser_name').val() != '') {
+        $('#password').focus();
     }
     if($.cookie('loggedInUser') != undefined) {
         checkLogin();
     }
 
     // process the form
-    $('#loginForm').submit(function(event) {
+    $('#login').click(function(event) {
 
         // get the form data
         // there are many ways to get this data using jQuery (you can use the class or id also)
         var formData = {
-            'userName': $('#iUserName').val(),
-            'password': $('#iPassword').val()
+            'userName': $('#user_name').val(),
+            'password': $('#password').val()
         };
 
         // process the form
@@ -62,14 +70,25 @@ $(document).ready(function() {
             .done(function(data) {
 
                 // log data to the console so we can see
-                console.log(data['has-warning']);
+                //console.log(data['has-warning']);
                 if(data['has-warning'] == false) {
-                    $('#loginFormDiv').addClass('hidden');
-                    $('#mainFormDiv').removeClass('hidden').addClass('container');
-                    $('#loggedInUserNameId').text($('#iUserName').val());
+					alert("登录成功！");
+
+    if($.cookie('loggedInUser') != undefined) {
+		var tp_str = "你好，"+$.cookie('loggedInUser');
+        $('#loggedInUserNameId').text(tp_str);
+    }
+					$('#wrapper').animate({
+						opacity: 'hide',
+						height:'hide'
+					}, 'fast');
+
+					$('#wrapper2').animate({
+						height: 'show',
+						opacity: 'show'
+					}, 'slow');
                 } else {
-                    $('#loginFormDiv').addClass('has-warning');
-                    $('#login2prompt').text(data['msg']);
+					alert("登录失败，请确认用户名和密码");
                 }
 
                 // here we will handle errors and validation messages

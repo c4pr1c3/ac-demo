@@ -50,7 +50,8 @@ $(document).ready(function() {
 	});
 
     if($.cookie('loggedInUser') != undefined) {
-        $('#loggedInUserNameId').text($.cookie('loggedInUser'));
+		var tp_str = "你好，"+$.cookie('loggedInUser');
+        $('#loggedInUserNameId').text(tp_str);
     }
 
 });
