@@ -17,6 +17,7 @@ services:
       - overlay
     ports:
       - 8080:80
+      - 8081:443
     volumes:
       - ../src:/var/www/html
     environment:
@@ -24,7 +25,7 @@ services:
       DB_AC_USERNAME: 'acuser'
       DB_AC_PASSWORD: 'password123'
       DB_AC_DBNAME: 'acdemo'
-      AC_SHARE_MASTER_KEY: '!!!-plz-change-me-!!!!!'
+      AC_SHARE_MASTER_KEY: '2c3a40b84068bfb5430b8128f2d14f44'
 
 networks:
   overlay:
