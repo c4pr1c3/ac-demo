@@ -25,17 +25,17 @@ function sendmail($email,$url){
     $mail->SMTPAuth=true;
     $mail->SMTPKeepAlive=true;
     $mail->SMTPSecure= "ssl";
-    $mail->Host="smtp.qq.com";
+    $mail->Host="smtp.example.com";
     $mail->Port=465;
-    $mail->Username="896861490@qq.com";  //设置发送方
-    $mail->Password="xkrhrpvzcvjjbcjd";  
-    $mail->From="896861490@qq.com";      //设置发送方
+    $mail->Username="example";  //设置发送方
+    $mail->Password="wxample";  
+    $mail->From="example";      //设置发送方
     $mail->FromName="ResetPassword_CUC";
     $mail->Subject="Reset your password";
     $mail->AltBody=$body;
     $mail->WordWrap=50;                  // 设置自动换行
     $mail->MsgHTML($body);
-    $mail->AddReplyTo("896861490@qq.com","ResetPassword_CUC");//设置回复地址
+    $mail->AddReplyTo("example","ResetPassword_CUC");//设置回复地址
     $mail->AddAddress($email,"hello");  //设置邮件接收方的邮箱和姓名
     $mail->IsHTML(true);                //使用HTML格式发送邮件
     if(!$mail->Send()){//通过Send方法发送邮件,根据发送结果做相应处理
