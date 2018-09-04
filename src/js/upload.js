@@ -20,18 +20,9 @@ $('#uploadFiles').on('filepreupload', function(event, data, previewId, index) {
     var form = data.form, files = data.files, response = data.response, reader = data.reader, 
     extra = data.extra;
 	// TODO 文件摘要和在客户端进行计算，在文件传输之前先传输校验和
-	var hashArray = new Array();
-	for (var i = 0; i < data.filescount; i++) {
-    	reader.readAsText(data.files[i]);
-    	reader.onload = function(e) {
-		    var rawLog = reader.result;
-		    var h = sodium.crypto_generichash(32, rawLog);
-			hashArray[i] = sodium.to_hex(h);
-			console.log(sodium.to_hex(h));
-		};
-	}
-    console.log('File pre upload triggered');
-});
+	console.log(reader);
+	console.log('File pre upload triggered');
+});   console.log('File pre upload triggered');
 $('#uploadFiles').on('fileuploaded', function(event, data, previewId, index) {
     var form = data.form, files = data.files, extra = data.extra,
     response = data.response, reader = data.reader;

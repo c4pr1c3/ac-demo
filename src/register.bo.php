@@ -35,7 +35,7 @@ function setupPageLayout($req_method, &$pageLayout)
 #判断用户输入用户名是否符合要求
 function checkUserName($name, &$errors){
   $errors_init = $errors;
-  $preg = '/^[A-Za-z0-9_@\.\-\x{4e00}-\x{9fa5}]+$/u';
+  $preg = '/^[A-Za-z0-9_@\.\-\x{4e00}-\x{9fef}+\x{3400}-\x{4db5}]+$/u'; //常用汉字及扩展表A
   if(mb_strlen($name, 'utf8')<5 || mb_strlen($name, 'utf8')>36){
     $errors[] = '用户名长度位为5-36位';
   }
@@ -116,8 +116,10 @@ function doRegister($postArr, &$pageLayout)
         // $privkey = $ret['privkey'];
         $salt = random_bytes(SODIUM_CRYPTO_PWHASH_SALTBYTES); // 16
         $nonce = random_bytes(SODIUM_CRYPTO_BOX_NONCEBYTES); // 24
+        $keypairs = getKeyPairs($salt, $password);
+        $pubkey = sodium_crypto_sign_publickey($keypairs['sign']);
           // 用户注册信息数据库写入操作
-          if(!registerInDb($userName, $useremail, $hashedPassword, sodium_bin2hex($salt), sodium_bin2hex($nonce))) {
+          if(!registerInDb($userName, $useremail, $hashedPassword, sodium_bin2hex($salt), sodium_bin2hex($nonce), sodium_bin2hex($pubkey))) {
             // 如果注册失败，则设置相应的错误提示信息，否则，默认只显示注册成功消息和对应的DIV片段代码
             setupPageLayout('GET', $pageLayout);
             $pageLayout['has-warning'] = true;

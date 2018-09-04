@@ -77,9 +77,9 @@ function doFileUpload() {
         $extname = $uploadFilePathParts['extension'];
         $sodium_hash = sodium_bin2hex(hashFileSodium($files['tmp_name'][$i])); // 上传后保存的加密文件名
         $delApiUrl = 'delete.php'; // FIXME 添加服务端的文件删除API
-
+        $uid = $_SESSION['uid'];
         try {
-            $dup = findDuplicateFileInDb($sodium_hash);
+            $dup = findDuplicateFileInDb($sodium_hash, $uid);
             debug_log($dup, __FILE__, __LINE__);
             if($dup > 0) {
                 $ret = [
@@ -121,7 +121,7 @@ function doFileUpload() {
 
         // http://php.net/manual/zh/features.file-upload.post-method.php
         // 构造文件保存路径
-        $uid = $_SESSION['uid'];
+        // $uid = $_SESSION['uid'];
         $datetime = date('Y-m-d H:i:s');
         $uploadfile = getUploadFilePath($uid, $sodium_hash, $datetime);
         $uploaddir = dirname($uploadfile);
@@ -140,21 +140,21 @@ function doFileUpload() {
         $filename = base64_safe_encode($files['name'][$i]);
         $encryptedFile = encryptFile($files['tmp_name'][$i], $enc_key, $filename, $nonce);
         if($encryptedFile !== false) {
-            // 对加密后的文件进行数字签名
+            // 对加密后的文件进行数字签名，并存储该签名值
             $sign_secretkey = sodium_crypto_sign_secretkey($_SESSION['sign']);
-            $signedFile = sodium_crypto_sign(
+            $signature = sodium_crypto_sign_detached(
                 $encryptedFile,
                 $sign_secretkey
             );
-            if ($signedFile === false) {
+            if ($signature === false) {
                 $ret = [
                     'error' => Prompt::$msg['upload_sign_failed']
                 ];
                 return $ret;
             } 
-            if(file_put_contents($uploadfile, $signedFile) !== false) {
+            if(file_put_contents($uploadfile, $encryptedFile) !== false) {
                 try {
-                    if(!chmod($uploadfile, 0644) || !uploadFileInDb($uploadFileName, filesize($files['tmp_name'][$i]), base64_safe_encode($enc_key_in_db), $sodium_hash, sodium_bin2hex($nonce), $uid, $datetime)) {
+                    if(!chmod($uploadfile, 0644) || !uploadFileInDb($uploadFileName, filesize($files['tmp_name'][$i]), base64_safe_encode($enc_key_in_db), $sodium_hash, sodium_bin2hex($nonce), $uid, $datetime, sodium_bin2hex($signature))) {
                         $ret = [
                             'error' => Prompt::$msg['db_oops']
                         ];

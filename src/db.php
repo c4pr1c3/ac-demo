@@ -30,16 +30,17 @@ function checkRegisterInDb($name, $email) {
     }
 }
 
-function registerInDb($name, $email, $password, $salt, $nonce) {
+function registerInDb($name, $email, $password, $salt, $nonce, $pubkey) {
     try {
         $conn = connectDb();
-        $sql = "INSERT INTO users (name, email, password, salt, nonce) VALUES (:name, :email, :password, :salt, :nonce)";
+        $sql = "INSERT INTO users (name, email, password, salt, nonce, pubkey) VALUES (:name, :email, :password, :salt, :nonce, :pubkey)";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':name', $name);
         $stmt->bindParam('email', $email);
         $stmt->bindParam(':password', $password);
         $stmt->bindParam(':salt', $salt);
         $stmt->bindParam(':nonce', $nonce);
+        $stmt->bindParam(':pubkey', $pubkey);
         return $stmt->execute();
 
     } catch(PDOException $e) {
@@ -61,10 +62,10 @@ function getUserInfoInDb($name) {
     }
 }
 
-function uploadFileInDb($name, $size, $enckey, $sodium_hash, $nonce, $uid, $datetime) {
+function uploadFileInDb($name, $size, $enckey, $sodium_hash, $nonce, $uid, $datetime, $signature) {
     try {
         $conn = connectDb();
-        $sql = "INSERT INTO files (name, size, enckey, sodium_hash, nonce, uid, create_time) VALUES (:name, :size, :enckey, :sodium_hash, :nonce, :uid, :datetime)";
+        $sql = "INSERT INTO files (name, size, enckey, sodium_hash, nonce, uid, create_time, signature) VALUES (:name, :size, :enckey, :sodium_hash, :nonce, :uid, :datetime, :signature)";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':name', $name);
         $stmt->bindParam(':size', $size);
@@ -73,6 +74,7 @@ function uploadFileInDb($name, $size, $enckey, $sodium_hash, $nonce, $uid, $date
         $stmt->bindParam(':nonce', $nonce);
         $stmt->bindParam(':uid', $uid);
         $stmt->bindParam(':datetime', $datetime);
+        $stmt->bindParam(':signature', $signature);
         $result = $stmt->execute();
         return $result;
 
@@ -143,12 +145,13 @@ function getSavedCipherTextFromDb($id, $uid) {
     }
 }
 
-function findDuplicateFileInDb($sodium_hash) {
+function findDuplicateFileInDb($sodium_hash, $uid) {
     try {
         $conn = connectDb();
-        $sql = "select count(id) as dup from files where sodium_hash=:sodium_hash";
+        $sql = "select count(id) as dup from files where sodium_hash=:sodium_hash and uid=:uid";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':sodium_hash', $sodium_hash, PDO::PARAM_STR);
+        $stmt->bindParam(':uid', $uid, PDO::PARAM_INT);
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return $result['dup'];

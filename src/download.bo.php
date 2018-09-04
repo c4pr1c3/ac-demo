@@ -61,12 +61,7 @@ function download_file($id, $uid, $sign, $box, $sess_key, $sess_nonce) {
 
     // 获取公钥，验证签名
     $saved_ciphertext = getUploadFilePath($uid, $sodium_hash, $create_time);
-    $signedFile = file_get_contents($saved_ciphertext);
-    $sign_publickey = sodium_crypto_sign_publickey($sign);
-    $encryptedFile = sodium_crypto_sign_open(
-        $signedFile,
-        $sign_publickey
-    );
+    $encryptedFile = file_get_contents($saved_ciphertext);
     if($encryptedFile){
         $decrypted_content = decryptFile(base64_safe_encode($filename), sodium_hex2bin($nonce), $encryptedFile, $n_enc_key);
     }

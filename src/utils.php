@@ -175,7 +175,6 @@ function hashFileSodium($input_file){
     } else {
         $content = file_get_contents($input_file);
         $h = sodium_crypto_generichash($content);
-
         return $h;
     }  
 }
