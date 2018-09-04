@@ -3,7 +3,7 @@
 require 'db.php';
 require 'utils.php';
 
-function download_file($id, $uid, $sess_privkey, $sess_passphrase) {
+function download_file($id, $uid, $sess_privkey, $sess_passphrase_key,$sess_passphrasenonce) {
 
     if(filter_var($id, FILTER_VALIDATE_INT, array('min_range' => 1)) === false) {
         $ret = [
@@ -14,7 +14,7 @@ function download_file($id, $uid, $sess_privkey, $sess_passphrase) {
     }
 
     try {
-        list($enc_key, $filename, $filesize, $sha256, $create_time) = getSavedCipherTextFromDb($id, $uid);
+        list($enc_key, $nonce_in_db,$filename, $filesize, $sha256, $create_time) = getSavedCipherTextFromDb($id, $uid);
     } catch(PDOException $e) {
         $ret = [
             Prompt::$msg['db_oops'],
@@ -31,7 +31,15 @@ function download_file($id, $uid, $sess_privkey, $sess_passphrase) {
         return $ret;
     }
 
-    $privkey = openssl_pkey_get_private($sess_privkey, $sess_passphrase);
+    //获取公钥加密密钥对
+     $ad = 'Additional (public) data';
+     $privkey = sodium_crypto_aead_chacha20poly1305_decrypt(
+        sodium_hex2bin($sess_privkey),
+        $ad,
+        sodium_hex2bin($sess_passphrasenonce),
+        sodium_hex2bin($sess_passphrase_key)
+     );  //可用于加密的公钥对
+
 
     if($privkey === false) {
         $ret = [
@@ -41,7 +49,13 @@ function download_file($id, $uid, $sess_privkey, $sess_passphrase) {
         return $ret;
     }
 
-    if(!openssl_private_decrypt(base64_decode($enc_key), $n_enc_key, $privkey)) {
+    $plaintext = sodium_crypto_box_open(
+        sodium_hex2bin($enc_key),
+        sodium_hex2bin($nonce_in_db),
+        $privkey
+    );
+
+    if($plaintext===false) {
         $ret = [
             Prompt::$msg['decrypt_oops'],
             '', '', ''
@@ -49,10 +63,31 @@ function download_file($id, $uid, $sess_privkey, $sess_passphrase) {
         return $ret;
     }
 
-    $saved_ciphertext = file_get_contents(getUploadFilePath($uid, $sha256, $create_time));
 
-    $decrypted_content = decryptFile($saved_ciphertext, $n_enc_key);
+
+    $saved_ciphertext = file_get_contents(getUploadFilePath($uid, $sha256, $create_time));
+    $decrypted_content = decryptFile($saved_ciphertext, $plaintext);
+    //file_put_contents('debug.log', "wenjianss ".$saved_ciphertext."\n",FILE_APPEND);
 
     return array('', $filename, $filesize, $decrypted_content);
 }
 
+
+
+
+function download_encryptedFile($id, $uid) {
+
+
+    try {
+        list($enc_key, $filename, $filesize, $sha256, $create_time) = getSavedCipherTextFromDb($id, $uid);
+    } catch(PDOException $e) {
+        $ret = [
+            Prompt::$msg['db_oops'],
+            '', '', ''
+        ];
+        return $ret;
+    }
+    $saved_ciphertext = file_get_contents(getUploadFilePath($uid, $sha256, $create_time));
+
+    return $saved_ciphertext;
+}
