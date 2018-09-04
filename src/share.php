@@ -15,64 +15,80 @@ $uid = $_SESSION['uid'];
 
 // validate authorization
 if(validateUserFileOwnership($uid, $fid, $sha256)) {
-    // encrypt shared file
-    list($err, $filename, $filesize, $decrypted_content) = download_file($fid, $uid, $_SESSION['privkey'], $_SESSION['passphrase']);
-    // $_encryptedFile = download_encryptedFile($fid,$uid);     //直接从数据库中获取加密文件 ，验证哈西值的正确性，
 
-    $shareKey = bin2hex(openssl_random_pseudo_bytes(Config::$shareKeyLen)); // 对称加密秘钥，不进行持久化保存，仅返回给前端用户一次
-    $shareKeyHash = password_hash($shareKey, PASSWORD_DEFAULT); // TODO 用户下载该加密文件时需要获得明文分享码并在数据库中校验一致才可进行文件加密秘钥解密
 
-    $nonce = generateRandomString(Config::$nonceLen); // 区分相同分享文件的随机值
-    $enc_key = base64_encode(openssl_random_pseudo_bytes(Config::$symmetricEncKeyLen)); // 对称加密秘钥，应妥善保存
-    $enc_key_in_db = encryptFile($enc_key, $shareKey, 'enckey'); // TODO 保存到数据库中的已加密的分享文件加密秘钥
+    list($error, $filename, $filesize, $decrypted_content) = download_file($fid, $uid,$_SESSION['encrypt_pair'], $_SESSION['passphrase_key'],$_SESSION['passphrase_nonce']);
+
+  //  list($error, $filename, $filesize, $decrypted_content) = download_file($id, $uid,$_SESSION['encrypt_pair'], $_SESSION['passphrase_key'],$_SESSION['passphrase_nonce']);
+    //file_put_contents('debug.log', "刚下载的新鲜的文本 ".$decrypted_content."\n",FILE_APPEND);
+
+    $shareKey= random_bytes(SODIUM_CRYPTO_AEAD_CHACHA20POLY1305_KEYBYTES);
+    $enc_key = random_bytes(SODIUM_CRYPTO_AEAD_CHACHA20POLY1305_KEYBYTES);
+    $nonce = random_bytes(SODIUM_CRYPTO_AEAD_CHACHA20POLY1305_NPUBBYTES);
+
+    //file_put_contents('debug.log', "enckey ".sodium_bin2hex($enc_key)."\n",FILE_APPEND);
+    //file_put_contents('debug.log', "sharekey ".sodium_bin2hex($shareKey)."\n",FILE_APPEND);
+
+    $shareKeysh = sodium_crypto_pwhash_str(
+        sodium_bin2hex($shareKey),
+        SODIUM_CRYPTO_PWHASH_OPSLIMIT_INTERACTIVE,
+        SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE
+    );
+
+
+    $enc_key_in_db = encryptFile(sodium_bin2hex($enc_key), $shareKey,'enckey');  //返回加密后的文件
     $encryptedFile = encryptFile($decrypted_content, $enc_key, $filename);
+    //file_put_contents('debug.log', "wenjian ".sodium_bin2hex($decrypted_content)."\n",FILE_APPEND);
+
 
     $shareFilePath = getShareFilePath($uid, $sha256);
-
     $shareFileRoot = dirname($shareFilePath);
 
 
-    //  验证数据库中的加密文件的签名
-    $_encryptedFile_for_sign = download_encryptedFile($fid, $uid);     //直接从数据库中获取加密文件 ，验证哈西值的正确性，
-    $pub_key = openssl_get_publickey($_SESSION['pubkey']);
-    $sign_file = getSavedCipher_sign_TextFromDb($fid, $uid);
-    $sign_verify = openssl_verify($_encryptedFile_for_sign, base64_decode($sign_file), $pub_key, 7);
-//    $pri_key_ = openssl_pkey_get_private($_SESSION['privkey'], $_SESSION['passphrase']);
-//    file_put_contents('debug.log', "verify  share file sign  ".$sign_verify. "\n", FILE_APPEND);
-//
-    //  file_put_contents('debug.log', "share file to verify the sign  information "."pubkey  ".$pub_key."\n", FILE_APPEND);
-//    file_put_contents('debug.log', "share file to verify the sign  information "."prikey  ".$pri_key_."\n", FILE_APPEND);
-//    file_put_contents('debug.log', "share file to verify the sign  information "."sign  ".$sign_file."\n", FILE_APPEND);
-
-    if ($sign_verify === 1){    //如果签名验证成功   就可以分享文件了
 
 
+       $ad = 'Additional (public) data';
+       $sign_seckey = sodium_crypto_aead_chacha20poly1305_decrypt(
+            sodium_hex2bin($_SESSION['sign_secrkey']),
+            $ad,
+            sodium_hex2bin($_SESSION['passphrase_nonce'] ),
+            sodium_hex2bin($_SESSION['passphrase_key'])
+        );
 
 
-        $pri_key = openssl_pkey_get_private($_SESSION['privkey'], $_SESSION['passphrase']);
-        openssl_sign($encryptedFile, $_sign, $pri_key, 7);
-        //file_put_contents('debug.log', "to get sign for share ".$_sign."\n",FILE_APPEND);
+        // 获取用户签名的私钥  公钥  公钥直接随链接分享  私钥直接对密文进行加密
+       // $pri_key = openssl_pkey_get_private($_SESSION['privkey'], $_SESSION['passphrase']);
+
+        $sign_pub_key = $_SESSION['sign_pubkey'];
+        $_sign = sodium_crypto_sign_detached(
+            $encryptedFile,
+            $sign_seckey
+        );
 
 
         if (!is_dir($shareFileRoot)) {
             mkdir($shareFileRoot, 0755, true);
         }
 
+
+
         if (file_put_contents($shareFilePath, $encryptedFile) !== false) { // 分享的文件单独加密存储在区别于用户上传目录的另一个目录
-            $ret = saveShareFileInfo($fid, $shareKeyHash, $enc_key_in_db, $shareFilePath, $nonce, base64_encode($_sign)); // 文件分享信息保存到数据库
+            $ret = saveShareFileInfo($fid, sodium_bin2hex($shareKeysh), $enc_key_in_db, $shareFilePath, sodium_bin2hex($nonce), sodium_bin2hex($_sign)); // 文件分享信息保存到数据库
             debug_log($ret, __FILE__, __LINE__);
             if (empty($err)) {
-                $params = generateShareLink($fid, $sha256, $expire_hours, $allowed_download_count, $nonce);
-                $ret = array('error' => '', 'url' => getUriRoot() . '/get.php' . $params, 'access_code' => $shareKey);
+
+                $params = generateShareLink($fid, $sha256, $expire_hours, $allowed_download_count, sodium_bin2hex($nonce),$sign_pub_key);
+
+               // file_put_contents('debug.log', "前面已经计算成功  进入生成链接阶段 ".$params."\n",FILE_APPEND);
+
+                $ret = array('error' => '', 'url' => getUriRoot().'/get.php'.$params, 'access_code' => sodium_bin2hex($shareKey));
             } else {
                 $ret = array('error' => $err);
             }
         } else {
             $ret = array('error' => Prompt::$msg['share_file_failed_in_create_file']);
         }
-    } else {
-        $ret = array('error' => Prompt::$msg['file_ownership_mismatch']);
-    }
+
 
 }
 echo json_encode($ret);

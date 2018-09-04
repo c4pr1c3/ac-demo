@@ -16,7 +16,11 @@ if($_SESSION['encrypted'] === false) {
     return;
 }
 
-list($error, $filename, $filesize, $decrypted_content) = download_file($id, $uid, $_SESSION['privkey'], $_SESSION['passphrase']);
+list($error, $filename, $filesize, $decrypted_content) = download_file($id, $uid,$_SESSION['encrypt_pair'], $_SESSION['passphrase_key'],$_SESSION['passphrase_nonce']);
+
+
+//file_put_contents('debug.log', "wenjiansss ".$decrypted_content."\n",FILE_APPEND);
+
 
 if(empty($error)) {
     header('Content-Description: Decrypted File Download');

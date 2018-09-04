@@ -11,53 +11,77 @@ function checkLogin($postArr) {
     'msg' => Prompt::$msg['login_failed']
   );
 
-    $userInfo = getUserInfoInDb($postArr['userName']);
-    file_put_contents('debug.log', "test login  ".$userInfo['valid']."\n");
-  if(!empty($postArr['userName']) && !empty($postArr['password'])&& $userInfo['valid'] !=='0') {
+
+  if(!empty($postArr['userName']) && !empty($postArr['password'])) {
     try {
-      $hashedPassword = checkRegisterInDb($postArr['userName']);  //返回是否能查找到该用户名
+      $ret= checkRegisterInDb($postArr['userName']);  //返回是否能查找到该用户名
 
-     //   file_put_contents('debug.log', "$hashedPassword  ".$hashedPassword. "\n", FILE_APPEND);
 
-      if(password_verify($postArr['password'], $hashedPassword)) {   //判断用户密码和哈西值是否相符  相符返回  true
+     if(sodium_crypto_pwhash_str_verify($ret['password'], $postArr['password'])){
 
-        $retMsg['has-warning'] = false;
+
+         $out_len = SODIUM_CRYPTO_SIGN_SEEDBYTES;
+         $seed = sodium_crypto_pwhash(
+             $out_len,
+             $postArr['password'],
+             sodium_hex2bin($ret['salt']),
+             SODIUM_CRYPTO_PWHASH_OPSLIMIT_INTERACTIVE,
+             SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE
+         );
+         // 同一个密码 用同一个salt 会生成同一个种子  可使用该种子生成用户的签名和加密的密码
+
+         $user_sign_kp = sodium_crypto_sign_seed_keypair($seed);
+         $user_sign_secretkey = sodium_crypto_sign_secretkey($user_sign_kp);
+         $user_sign_publickey = sodium_crypto_sign_publickey($user_sign_kp);
+         $user_encrypt_kp = sodium_crypto_box_seed_keypair($seed);
+
+
+
+         $retMsg['has-warning'] = false;
         $retMsg['msg'] = Prompt::$msg['login_ok'];
         $_SESSION['loggedInUser'] = $postArr['userName'];
         setcookie('loggedInUser', $postArr['userName']);
 
         // 读取用户表中其他信息并保存在session中
-        //$userInfo = getUserInfoInDb($postArr['userName']);
+        $userInfo = getUserInfoInDb($postArr['userName']);
         $_SESSION['uid']  = $userInfo['id'];
-        $_SESSION['pubkey']  = $userInfo['pubkey'];
-        $_SESSION['privkey'] = $userInfo['privkey'];
+        //$_SESSION['pubkey']  = $userInfo['pubkey'];
+        //$_SESSION['privkey'] = $userInfo['privkey'];
 
         // TODO 用户登录时增加选项“为本次登录会话记住口令”
         //      以下状态变量设置为false时表示上述session变量privkey为非加密状态
         $_SESSION['encrypted'] = (bool)getenv('SESSION_AC_ENCRYPTED');
 
-
         if($_SESSION['encrypted'] === false) {
-          $_SESSION['passphrase'] = base64_encode(openssl_random_pseudo_bytes(Config::$asymmetricEncKeyLen)); // 会话用非对称加密秘钥
-          // 使用用户口令解密内存中保存的刚刚创建的用户私钥
-          $privkey = openssl_pkey_get_private($userInfo['privkey'], $postArr['password']);     //使用用户的原始口令为密钥加密保存
-          if($privkey !== false) {
-            // 将用户私钥重新用新生成的随机口令$_SESSION['passphrase']重新加密后保存到内存
-            if(openssl_pkey_export($privkey, $n_privkey, $_SESSION['passphrase'])) {
-              $_SESSION['privkey'] = $n_privkey;
-              openssl_pkey_free($privkey);// 释放内存中的明文私钥
-            }
-          }
+
+            $key = random_bytes(SODIUM_CRYPTO_AEAD_CHACHA20POLY1305_KEYBYTES);  //生成对称加密的key
+            $nonce = random_bytes(SODIUM_CRYPTO_AEAD_CHACHA20POLY1305_NPUBBYTES);//生成加密对称密钥
+            $ad = 'Additional (public) data';
+            $sign_secretkey= sodium_bin2hex(sodium_crypto_aead_chacha20poly1305_encrypt(
+                $user_sign_secretkey,
+                $ad,
+                $nonce,
+                $key
+            ));// 将签名私钥加密后存储
+            $crypt_keypair = sodium_bin2hex(sodium_crypto_aead_chacha20poly1305_encrypt(
+                $user_encrypt_kp,
+                $ad,
+                $nonce,
+                $key
+            ));// 将加密密钥对加密存储
+            $_SESSION['passphrase_key'] = sodium_bin2hex($key);
+            $_SESSION['passphrase_nonce'] = sodium_bin2hex($nonce);
+            $_SESSION['sign_pubkey'] =  sodium_bin2hex(  $user_sign_publickey);
+            $_SESSION['encrypt_pair'] = $crypt_keypair;
+            $_SESSION['sign_secrkey'] = $sign_secretkey;
+
         }
       }
     } catch(Exception $e) {
       $retMsg['msg'] = Prompt::$msg['db_oops'];
-
     }
   }
-    if($userInfo['valid'] ==='0'){
-        $retMsg['msg'] = Prompt::$msg['login_verify'];
-    }
+
   echo json_encode($retMsg);
 
 }

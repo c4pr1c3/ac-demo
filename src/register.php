@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 
   <div class="<?= $pageLayout['showRegFormOrNot'] ?>">
-    <form action="register.php" method="post">
+    <form action="register.php" method="post" onsubmit='document.charset='utf-8';'>
       <h1>中传放心传</h1>
 
         <div class="form-group" id="iuserNameDiv" >
@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     function checkUsername()
                     {
                         //正则表达式
-                        let reg = new RegExp("^[A-Za-z0-9\u4e00-\u9fa5]+$");//获取输入框中的值
+                        let reg = new RegExp("^[A-Za-z0-9]|[\u3400-\u4DB5\u4E00-\u9FEF\uFA0E\uFA0F\uFA11\uFA13\uFA14\uFA1F\uFA21\uFA23\uFA24\uFA27-\uFA29]|[\uD840-\uD868\uD86A-\uD86C\uD86F-\uD872\uD874-\uD879][\uDC00-\uDFFF]|\uD869[\uDC00-\uDED6\uDF00-\uDFFF]|\uD86D[\uDC00-\uDF34\uDF40-\uDFFF]|\uD86E[\uDC00-\uDC1D\uDC20-\uDFFF]|\uD873[\uDC00-\uDEA1\uDEB0-\uDFFF]|\uD87A[\uDC00-\uDFE0]+$");//获取输入框中的值
                         let username = document.getElementById("iuserName").value.trim();//判断输入框中有内容
                         if(!reg.test(username))
                         {
