@@ -60,7 +60,7 @@ function ajaxDelete(obj) {
 	tr = $(obj.parentNode.parentNode);
 	console.log(tr);
 
-	key = tr[0].childNodes[5].innerText;
+	key = tr[0].childNodes[2].innerText;
 	filename = tr.find('td a')[0].innerText;
 
 	if(!confirm('确认删除文件\n ' + filename + ' ？')) {
@@ -106,11 +106,11 @@ function ajaxShare(obj) {
 	tr = $(obj.parentNode.parentNode);
 	console.log(tr);
 
-	fkey = tr[0].childNodes[5].innerText;
+	fkey = tr[0].childNodes[2].innerText;
 	fid  = tr.find('td')[0].innerText
 	fsname = tr.find('td a')[0].innerText;
-	fstime = tr[0].childNodes[7].innerText; 
-	fsize = tr[0].childNodes[9].innerText; 
+	fstime = tr[0].childNodes[3].innerText; 
+	fsize = tr[0].childNodes[4].innerText; 
 
     if(fsize > 1024) {
         if(fsize > 1024 * 1024) {

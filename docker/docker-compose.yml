@@ -3,7 +3,7 @@ version: '3'
 services:
 
   db:
-    image: cuc_ac_demo_db:1.0
+    image: c4pr1c3/ac-demo-db:1.0
     restart: always
     networks:
       - overlay
@@ -11,7 +11,7 @@ services:
       MYSQL_ROOT_PASSWORD: example
 
   php:
-    image: cuc_ac_demo_php:1.0
+    image: c4pr1c3/ac-demo-php:1.0
     restart: always
     networks:
       - overlay

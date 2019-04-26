@@ -32,7 +32,7 @@
 
 本样例工程的主要技术栈如下：
 
-* 前端使用的 js 框架依赖已在 src/package.json 中定义，可以通过在 ``src/`` 目录下执行 ``npm install`` 直接安装所有前端依赖文件；
+* 前端使用的 js 框架依赖已在 src/package.json 中定义，`build.sh` 中已通过 Docker 的方式一次性下载所有依赖到指定目录；
 * 后端使用原生 PHP 编写，没有使用任何框架；
 * 程序部署运行环境采用 docker，如果本机已配置好 docker 运行时环境可以通过执行 ``bash build.sh`` 自动完成程序的发布和部署；
 

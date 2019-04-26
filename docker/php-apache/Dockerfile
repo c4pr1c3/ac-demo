@@ -1,4 +1,4 @@
-FROM php:apache
+FROM php:7.3-apache
 MAINTAINER c4pr1c3 "c4pr1c3@gmail.com"
 
 RUN docker-php-ext-install pdo pdo_mysql
