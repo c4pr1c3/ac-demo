@@ -5,7 +5,7 @@
 # 修改为你要签发的证书对应的域名
 # 同时需要修改 intermediate/openssl.cnf 中 DNS.1 的域名
 # ref: https://stackoverflow.com/questions/7580508/getting-chrome-to-accept-self-signed-localhost-certificate/43666288#43666288
-domain="ac-demo.me" 
+domain="${1:-ac-demo.me}" 
 
 
 if [[ ! -f "intermediate/private/$domain.key.pem" ]];then
@@ -14,6 +14,12 @@ openssl genrsa -aes256 \
       -out intermediate/private/$domain.key.pem 2048
 
 chmod 400 intermediate/private/$domain.key.pem
+
+if [[ ! -f "intermediate/${domain}.openssl.cnf" ]];then
+  cat "intermediate/openssl.cnf.example" | sed "s#<CA_default_dir>#$PWD/intermediate#g"  > "intermediate/openssl.cnf.example.tmp"
+  cat "intermediate/openssl.cnf.example.tmp" | sed "s#<DOMAINS>#*.${domain}#g"  > "intermediate/${domain}.openssl.cnf"
+  cp "intermediate/${domain}.openssl.cnf" "intermediate/openssl.cnf"
+fi
 
 openssl req -config intermediate/openssl.cnf \
       -key intermediate/private/$domain.key.pem \
@@ -34,7 +40,7 @@ fi
 
 cat << EOF
 ./intermediate/certs/ca-chain.cert.pem
-./intermediate/certs/ac-demo.me.cert.pem
-./intermediate/private/ac-demo.me.key.pem
+./intermediate/certs/${domain}.cert.pem
+./intermediate/private/${domain}.key.pem
 EOF
 

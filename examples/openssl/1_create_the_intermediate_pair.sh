@@ -27,8 +27,8 @@ openssl genrsa -aes256 \
 
 chmod 400 intermediate/private/intermediate.key.pem
 
-if [[ ! -f "intermediate/openssl.cnf.bak" ]];then
-  sed -i.bak "s#<CA_default_dir>#$PWD/intermediate#g" intermediate/openssl.cnf
+if [[ ! -f "intermediate/openssl.cnf" ]];then
+  cat "intermediate/openssl.cnf.example" | sed "s#<CA_default_dir>#$PWD/intermediate#g"  > "intermediate/openssl.cnf"
 fi
 
 openssl req -config intermediate/openssl.cnf -new -sha256 \

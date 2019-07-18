@@ -35,8 +35,8 @@ Email Address []:admin@a101e.lab
 -------------------- Notes Above --------------------
 EOF
 
-if [[ ! -f "openssl.cnf.bak" ]];then
-  sed -i.bak "s#<CA_default_dir>#\"$PWD\"#g" openssl.cnf
+if [[ ! -f "openssl.cnf" ]];then
+  cat "openssl.cnf.example" | sed "s#<CA_default_dir>#$PWD#g"  > "openssl.cnf"
 fi
 
 openssl req -config openssl.cnf \

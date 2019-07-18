@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-source 2_sign_server_and_client_certs.sh
+domain="${1:-ac-demo.me}" 
 
 openssl rsa -in intermediate/private/$domain.key.pem -out intermediate/private/$domain.key.nopass.pem
 
