@@ -17,3 +17,5 @@ jobs:
           dockerfile-path: "./docker/${{ matrix.image-name }}/Dockerfile"
       - name: anchore inline scan JSON results
         run: for j in `ls ./anchore-reports/*.json`; do echo "---- ${j} ----"; cat ${j}; echo; done
+      - name: show vulnerabilities log in human readable format
+        run: jq -r '.vulnerabilities[] ./anchore-reports/vulnerabilities.json | "\(.vuln)\t\(.severity)\t\(.package)\t\(.package_name)\t\(.package_version)"' | sort -k2 | grep -v Negligible
