@@ -11,4 +11,6 @@ VOLUME ["/var/lib/mysql"]
 
 EXPOSE 3306
 
+USER mysql
+
 HEALTHCHECK --interval=10s --timeout=3s --retries=3 CMD mysqladmin ping --silent || exit 1
