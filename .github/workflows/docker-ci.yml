@@ -1,0 +1,23 @@
+name: Docker Image CI
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-bionic
+    steps:
+      - uses: actions/checkout@v1
+      - name: Build the DB Image
+        id: ac-demo-db
+        run: docker build -t c4pr1c3/ac-demo-db:1.0  -f docker/mariadb/Dockerfile .
+      - name: Build the App Image
+        id: ac-demo-php
+        run: docker build -t c4pr1c3/ac-demo-php:1.0  -f docker/php-apache/Dockerfile .
+      - uses: anchore/scan-action@master
+        with:
+          image-reference: "c4pr1c3/ac-demo-db:1.0"
+          dockerfile-path: "./docker/mariadb/Dockerfile"
+      - uses: anchore/scan-action@master
+        with:
+          image-reference: "c4pr1c3/ac-demo-php:1.0"
+          dockerfile-path: "./docker/php-apache/Dockerfile"
+      - name: anchore inline scan JSON results
+        run: for j in `ls ./anchore-reports/*.json`; do echo "---- ${j} ----"; cat ${j}; echo; done
