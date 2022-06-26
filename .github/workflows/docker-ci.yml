@@ -13,7 +13,7 @@ jobs:
         run: docker build -t c4pr1c3/${{ matrix.image-name }}:1.0  -f docker/${{ matrix.image-name }}/Dockerfile .
       - uses: anchore/scan-action@v3
         with:
-          path: "./docker/${{ matrix.image-name }}/Dockerfile"
+          path: "./docker/${{ matrix.image-name }}/"
           fail-build: false
       - name: anchore inline scan JSON results
         run: for j in `ls ./anchore-reports/*.json`; do echo "---- ${j} ----"; cat ${j}; echo; done
