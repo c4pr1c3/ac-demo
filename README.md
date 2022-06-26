@@ -60,7 +60,7 @@ sudo apt update && sudo apt install -y npm && cd src/ && npm install
 
 ## 演示
 
-[![查看演示视频](ac-demo.png)](https://www.bilibili.com/video/BV1Hb4y1R7FE)
+[![查看演示视频](ac-demo.png)](https://www.bilibili.com/video/BV1Hb4y1R7FE?p=119)
 
 ## 附录-1：项目测试验证环境信息
 
