@@ -14,6 +14,7 @@ jobs:
       - uses: anchore/scan-action@v3
         with:
           path: "./docker/${{ matrix.image-name }}/Dockerfile"
+          fail-build: false
       - name: anchore inline scan JSON results
         run: for j in `ls ./anchore-reports/*.json`; do echo "---- ${j} ----"; cat ${j}; echo; done
       - name: show vulnerabilities log in human readable format
