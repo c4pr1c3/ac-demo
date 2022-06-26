@@ -11,10 +11,10 @@ jobs:
       - name: Build the ${{ matrix.image-name }} Image
         id: ac-demo-db
         run: docker build -t c4pr1c3/${{ matrix.image-name }}:1.0  -f docker/${{ matrix.image-name }}/Dockerfile .
-      - uses: anchore/scan-action@master
+      - uses: anchore/scan-action@v3
         with:
-          image-reference: "c4pr1c3/${{ matrix.image-name }}:1.0"
-          dockerfile-path: "./docker/${{ matrix.image-name }}/Dockerfile"
+          image: "c4pr1c3/${{ matrix.image-name }}:1.0"
+          path: "./docker/${{ matrix.image-name }}/Dockerfile"
       - name: anchore inline scan JSON results
         run: for j in `ls ./anchore-reports/*.json`; do echo "---- ${j} ----"; cat ${j}; echo; done
       - name: show vulnerabilities log in human readable format
