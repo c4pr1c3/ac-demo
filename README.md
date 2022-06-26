@@ -1,4 +1,8 @@
-本项目是 [中国传媒大学密码学应用实践课程](https://c4pr1c3.github.io/cuc-wiki/ac.html) 的一个样例工程，主要完成了以下功能：
+# 中传放心传
+
+本项目是 [中国传媒大学密码学应用实践课程](https://c4pr1c3.github.io/cuc-wiki/ac.html) 的一个样例工程。
+
+## 功能清单
 
 * 基于网页的用户注册与登录系统
   * 允许用户注册到系统
@@ -30,7 +34,7 @@
 
 同学们可以参考这个样例工程中的代码，自行修改或采用其中的代码片段以完成尽可能多的作业要求。
 
-本样例工程的主要技术栈如下：
+## 本项目用到的关键技术
 
 * 前端使用的 js 框架依赖已在 `src/package.json` 中定义，`build.sh` 中已通过 Docker 的方式一次性下载所有依赖到指定目录；
 * 后端使用原生 PHP 编写，没有使用任何框架；
@@ -42,11 +46,11 @@
 
 ## 依赖环境安装补充说明
 
-* ``build.sh`` 的执行需要 ``root`` 权限，普通用户可以 ``sudo bash build.sh``
-* 国内特殊网络环境条件下，安装 ``docker`` 和从 ``Docker Hub`` 拉取基础镜像可能会无法正常完成，建议使用可靠镜像源和缓存。推荐：
+* `build.sh` 的执行需要 `root` 权限，普通用户可以 `sudo bash build.sh`
+* 国内特殊网络环境条件下，安装 `docker` 和从 `Docker Hub` 拉取基础镜像可能会无法正常完成，建议使用 **可靠** 镜像源和缓存。推荐：
     * [安装 docker 主程序指南](http://mirrors.ustc.edu.cn/help/docker-ce.html)
     * [加速访问 Docker Hub 指南](http://mirrors.ustc.edu.cn/help/dockerhub.html)
-* 以 ``Ubuntu 16.04`` 为例，安装前端依赖文件所需要的操作步骤如下：
+* 以 `Ubuntu 16.04` 为例，安装前端依赖文件所需要的操作步骤如下：
 
 ```bash
 # 以下命令请在检出代码仓库后的本地仓库根目录下执行
@@ -54,7 +58,11 @@
 sudo apt update && sudo apt install -y npm && cd src/ && npm install
 ```
 
-## 附录：项目测试验证环境信息
+## 演示
+
+[![查看演示视频](ac-demo.png)](https://www.bilibili.com/video/BV1Hb4y1R7FE)
+
+## 附录-1：项目测试验证环境信息
 
 ```
 Client:
@@ -76,7 +84,7 @@ Server:
   Experimental:	false
 ```
 
-## Ubuntu 18.04 上配置本项目
+## 附录-2：Ubuntu 18.04 上配置本项目
 
 如果你在安装和使用 `pip` 时遇到类似如下的[错误](https://github.com/pypa/pipenv/issues/2122)：
 
