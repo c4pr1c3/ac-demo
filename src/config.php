@@ -12,10 +12,13 @@ class Config {
                 '/[0-9]+/', '口令需要至少一位数字'
             ),
             'chars' => array(
-                '/[a-zA-Z]+/', '口令需要至少一个英文字母'
+                '/[A-Z]+/', '口令需要至少一个大写英文字母'
+            ), 
+            'special' => array(
+                '/[#?!@$%^&*-]+/', '口令需要至少一个特殊字符'
             )
         )
-    );
+     );
     public static $uploadRoot = "/srv/acdemo/upload";
     public static $shareRoot = "/srv/acdemo/share";
     public static $debugLogFile = '/tmp/cucCloudPan.log';
