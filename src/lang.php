@@ -2,8 +2,8 @@
 
 class Prompt {
     public static $msg = array(
-        'invalid_username' => '用户名必须是可正常接收电子邮件的邮箱地址',
-        'invalid_password' => '口令长度不能超过36个字符',
+        'invalid_username' => '用户名的合法字符集范围：中文、英文字母、数字',
+        'invalid_password' => '口令长度在6-36个字符之间且包含至少一位数字、一个大写字母及一个特殊字符',
         'register_ok' => '注册成功，请继续',
         'duplicate_username' => '该用户名已被注册',
         'register_failed' => '注册失败，请稍后重试',
@@ -25,6 +25,7 @@ class Prompt {
         'share_file_exceed_down_limit' => '超过允许的下载次数，无法访问',
         'share_file_invalid_access_code' => '验证码错误',
         'share_file_not_found' => '错误的文件分享链接'
+
     );
     public static $uploadErr = array(
         UPLOAD_ERR_INI_SIZE => '上传的文件超过了10MB',
@@ -35,3 +36,4 @@ class Prompt {
         UPLOAD_ERR_CANT_WRITE => '文件写入失败'
     );
 }
+
