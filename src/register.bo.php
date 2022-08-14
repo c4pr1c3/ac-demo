@@ -42,8 +42,23 @@ function checkPassword($pwd, &$errors) {
     return ($errors == $errors_init);
 }
 
+function isusername($chars,$encoding='utf8'){
+    $pattern =($encoding=='utf8')?'/[\x{4e00}-\x{9fa5}a-zA-Z0-9]/u':'/[\x80-\xFF]/';
+    if(
+    preg_match_all($pattern,$chars,$result))
+       {
+        return true;
+        }
+        else
+        { 
+        return false;
+        }
+}
+$chars = $postArr['userName'];
+
 function isInvalidRegister($postArr, &$pageLayout) {
-    if(empty($postArr['userName']) || !filter_var($postArr['userName'], FILTER_VALIDATE_EMAIL)) {
+    if(empty($postArr['userName']) || !filter_var($postArr['userName'], FILTER_CALLBACK,
+    array("options"=>"isusername"))) {
         $pageLayout['userName-has-warning'] = 'has-warning';
         $pageLayout['has-warning'] = true;
         $pageLayout['showRegFormOrNot'] = 'container';

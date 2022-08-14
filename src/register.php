@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <div class="form-group">
         <div class="form-group <?= $pageLayout['userName-has-warning'] ?>">
           <label for="iUserName">用户名</label>
-          <input type="email" class="form-control" id="iUserName" name="userName" placeholder="请输入用户名" autofocus required maxlength="128" value="<?= $_SESSION['userName'] ?>">
+          <input onkeyup="value=value.replace(/[^\w\u4E00-\u9FA5]/g,'')"  class="form-control" id="iUserName" name="userName" placeholder="请输入用户名" autofocus required maxlength="128" value="<?= $_SESSION['userName'] ?>">
           <p class="help-block"><?= $pageLayout['userNameMsg'] ?></p>
         </div>
         <div id="iPasswordDiv" class="form-group <?= $pageLayout['password-has-warning'] ?>">
