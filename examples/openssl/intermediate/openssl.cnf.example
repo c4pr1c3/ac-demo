@@ -122,7 +122,7 @@ subjectAltName = @alt_names
 
 # 修改为服务器证书匹配的站点域名
 [alt_names]
-DNS.1 = <DOMAINS>
+DNS.1 = 
 
 [ crl_ext ]
 # Extension for CRLs (`man x509v3_config`).
