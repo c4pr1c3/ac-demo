@@ -17,7 +17,7 @@ chmod 400 intermediate/private/$domain.key.pem
 
 if [[ ! -f "intermediate/${domain}.openssl.cnf" ]];then
   cat "intermediate/openssl.cnf.example" | sed "s#<CA_default_dir>#$PWD/intermediate#g"  > "intermediate/openssl.cnf.example.tmp"
-  cat "intermediate/openssl.cnf.example.tmp" | sed "s#<DOMAINS>#*.${domain}#g"  > "intermediate/${domain}.openssl.cnf"
+  cat "intermediate/openssl.cnf.example.tmp" | sed "s#<DOMAINS>#${domain}#g"  > "intermediate/${domain}.openssl.cnf"
   cp "intermediate/${domain}.openssl.cnf" "intermediate/openssl.cnf"
 fi
 
