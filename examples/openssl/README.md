@@ -38,6 +38,24 @@ docker-compose up -d
 # 从 2_sign_server_and_client_certs.sh 脚本开始顺序执行即可签发不同域名的网站服务器证书
 
 ```
+- 注意事项：
+  1. 在原脚本的基础上，需要对每个脚本进入vim编辑界面，执行set ff=unix ，使vi 编辑器，使用unix换行符
+  2. 除了更改<DOMAIN>内容为对应域名，需要更改`2_sign_server_and_client_certs.sh`脚本中第20行的部分内容
+
+```bash
+	if [[ ! -f "intermediate/${domain}.openssl.cnf" ]];then
+
+ 	cat "intermediate/openssl.cnf.example" | sed "s#<CA_default_dir>#$PWD/intermediate#g"  > "intermediate/openssl.cnf.example.tmp"
+ 	
+	# $*.{domain}改为 ${domain}，否则绑定的域名实际上为*.ac-demo.me
+ 	cat "intermediate/openssl.cnf.example.tmp" | sed "s#<DOMAINS>#$*.{domain}#g"  > "intermediate/${domain}.openssl.cnf"
+
+ 	cp "intermediate/${domain}.openssl.cnf" "intermediate/openssl.cnf"
+
+	fi
+```
+
+​			 3.在所有脚本执行结束后，在脚本同目录下生成了一个certs文件夹，将文件夹内生成的`pem`后缀文件更改后缀为`crt`并安装证书到受信任的根证书颁发机构。
 
 ## 最终效果展示 
 
