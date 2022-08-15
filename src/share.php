@@ -26,9 +26,19 @@ if(validateUserFileOwnership($uid, $fid, $sha256)) {
   $enc_key_in_db = encryptFile($enc_key, $shareKey, 'enckey'); // TODO 保存到数据库中的已加密的分享文件加密秘钥
   $encryptedFile = encryptFile($decrypted_content, $enc_key, $filename);
 
+   # 对密文encryptedFile和随机数nonce进行数字签名----防止重放攻击？好像不需要防止重放
+  //所以只对密文进行数字签名
+  // $encryptfilehash = hash_file('sha256', $encryptedFile);
+  $privkey = openssl_pkey_get_private($_SESSION['privkey'], $_SESSION['passphrase']);
+  openssl_sign($encryptedFile, $signature, $privkey, OPENSSL_ALGO_SHA256);
+  
   $shareFilePath = getShareFilePath($uid, $sha256);
 
   $shareFileRoot = dirname($shareFilePath);
+
+  $file = pathinfo($shareFilePath);
+  $signatureFile = $shareFileRoot . "/" . $file['filename'] . "-sign.enc";
+  file_put_contents($signatureFile, $signature);
 
   if(!is_dir($shareFileRoot)) {
     mkdir($shareFileRoot, 0755, true);

@@ -85,8 +85,17 @@ HTML;
             exit();
         }
 
+        $encryptedFile = file_get_contents($fileShareInfo['filepath']);
+
+        $file = pathinfo($fileShareInfo['filepath']);
+        $signatureFile = $file['dirname'] . "/" . $file['filename'] . "-sign.enc";
+        $signature = file_get_contents($signatureFile); 
+
+        // //向CA中心请求公钥
+        $pub_key = openssl_get_publickey($fileShareInfo['pubkey']);
         if(password_verify($access_code, $fileShareInfo['sharekey'])) {
             // 用户提供的access_code是正确的
+            if(openssl_verify($encryptedFile, $signature, $pub_key, OPENSSL_ALGO_SHA256) === 1) {
             $enc_key = decryptFile($fileShareInfo['enckey'], $access_code);
             $decrypted_content = decryptFile($fileShareInfo['filepath'], $enc_key);
 
@@ -113,6 +122,9 @@ HTML;
             } else {
                 $ret = Prompt::$msg['share_file_invalid_access_code']; 
             }
+        } else {
+            $ret = Prompt::$msg['download_verifysign_failed'];
+        }
         } else {
             $ret = Prompt::$msg['share_file_invalid_access_code']; 
         }

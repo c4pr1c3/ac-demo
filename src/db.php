@@ -217,7 +217,7 @@ function saveShareFileInfoInDb($fid, $shareKeyHash, $enc_key_in_db, $shareFilePa
 function getFileShareInfoFromDb($fid, $nonce) {
     try {
         $conn = connectDb();
-        $sql = "select users.name as uname, dcount, sharekey, share.enckey as enckey, filepath, files.name as fname, size from share left join files on share.fid=files.id left join users on files.uid=users.id where fid=:fid and nonce=:nonce";
+        $sql = "select users.name as uname,pubkey, dcount, sharekey, share.enckey as enckey, filepath, files.name as fname, size from share left join files on share.fid=files.id left join users on files.uid=users.id where fid=:fid and nonce=:nonce";
 
         $stmt = $conn->prepare($sql);
         $stmt->bindValue(':fid', (int)$fid, PDO::PARAM_INT);
