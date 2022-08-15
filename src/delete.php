@@ -9,3 +9,4 @@ $uid = $_SESSION['uid'];
 
 echo json_encode(delete_file($key, $uid));
 
+

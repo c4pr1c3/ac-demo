@@ -16,6 +16,7 @@ function listFiles($uid, $offset, $limit, $search = '') {
         $content[$key]['del'] = '<a href="#" onclick="ajaxDelete(this);"><span class="glyphicon glyphicon-remove"></span></a>';
         // <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" data-whatever="@mdo">Open modal for @mdo</button>
         $content[$key]['share'] = '<a href="#" onclick="ajaxShare(this);" data-toggle="modal" data-target="#shareModal"><span class="glyphicon glyphicon-share"></span></a>';
+        $content[$key]['check'] = '<a href="#" onclick="ajaxCheck(this);"><span class="glyphicon glyphicon-paperclip"></span></a>';
       }
     } else {
       $content = array();

@@ -9,7 +9,7 @@ session_start();
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>中传放心传 - 注册</title>
+  <title>中传放心传 - 找回密码</title>
 
   <!-- Bootstrap -->
   <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
@@ -25,23 +25,19 @@ session_start();
 <body>
 
 <?php
-require_once 'register.bo.php';
+require_once 'lose.bo.php';
 
-// 根据客户端请求类型是GET还是POST，分别设置页面中不同div是否可见
 setupPageLayout($_SERVER['REQUEST_METHOD'], $pageLayout);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
-    doRegister($_POST, $pageLayout);
-  // file_put_contents('/tmp/test.log','====='.PHP_EOL,FILE_APPEND);
-  // file_put_contents('/tmp/test.log',$postArr['userName'].PHP_EOL,FILE_APPEND);
-  // file_put_contents('/tmp/test.log','====='.PHP_EOL,FILE_APPEND);
+  
+  doLoseRegister($_POST, $pageLayout);
+  
 }
-
 ?>
 
-  <div class="<?= $pageLayout['showRegFormOrNot'] ?>">
-    <form action="register.php" method="post">
+<div class="<?= $pageLayout['showLoseFormOrNot'] ?>">
+    <form action="lose.php" method="post">
       <h1>中传放心传</h1>
       <div class="form-group">
         <div class="form-group <?= $pageLayout['userName-has-warning'] ?>">
@@ -50,48 +46,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <p class="help-block"><?= $pageLayout['userNameMsg'] ?></p>
         </div>
         <div id="iPasswordDiv" class="form-group <?= $pageLayout['password-has-warning'] ?>">
-          <label for="iPassword">口令</label>
-          <input type="password" class="form-control" id="iPassword" name="password" placeholder="请输入登录口令" oninput="checkRegister()">
+          <label for="iPassword">输入新口令</label>
+          <input type="password" class="form-control" id="iPassword" name="password" placeholder="请输入新口令" oninput="checkLoseRegister()">
           <p class="help-block"><?= $pageLayout['userPasswordMsg'] ?></p>
         </div>
         <div id="re-iPasswordDiv" class="form-group <?= $pageLayout['password-has-warning'] ?>">
-          <label for="re-iPassword">确认口令</label>
-          <input type="password" class="form-control" id="re-iPassword" name="password2" placeholder="请再次输入登录口令" onblur="checkRegister()" oninput="checkRegister()">
+          <label for="re-iPassword">确认新口令</label>
+          <input type="password" class="form-control" id="re-iPassword" name="password2" placeholder="请确认新口令" onblur="checkLoseRegister()" oninput="checkLoseRegister()">
           <p class="help-block" id="password2prompt"></p>
           <div class="form-group <?= $pageLayout['pin-has-warning'] ?>">
           <label for="iPin">PIN码</label>
-          <input type="password" class="form-control" id="ipin" name="pin" placeholder="请输入您唯一的不可更改的8位的PIN码" minlength="8" oninput="if(value.length>8)value=value.slice(0,8)" required>
+          <input type="password" class="form-control" id="ipin" name="pin" placeholder="请输入您的PIN码"  oninput="if(value.length>100)value=value.slice(0,10)" required>
           <p class="help-block"><?= $pageLayout['userPinMsg'] ?></p>
         </div>
+
+        <div class="form-group <?= $pageLayout['code-has-warning'] ?>">
+          <p><label for="iCode">验证码&emsp;&emsp;</label>
+          <img  id="captcha_img" border="1" src="./captcha.php?r=<?php echo rand(); ?>" alt="" width="100" height="50">
+				
+				<a href="javascript:void(0)" onclick="document.getElementById('captcha_img').src='./captcha.php?r='+Math.random() " style="float:right ;font-size:20px">点击更换验证码</a>
+			</p>
+          <input type="text" class="form-control" id="icode"  name="code" placeholder="验证码" minlength="4" oninput="if(value.length>4)value=value.slice(0,4)" required>
+          <p class="help-block"><?= $pageLayout['userCodeMsg'] ?></p>
+        </div>
           <script language='javascript' type='text/javascript'>
-          // FIXME Bad Coding Style
-    function checkRegister() {
+        function checkLoseRegister() {
         if ($('#iPassword').val() != $('#re-iPassword').val()) {
             $('#password2prompt').text('<?=Prompt::$msg["password_not_same"]?>');
             $('#iPasswordDiv').addClass('has-warning');
             $('#re-iPasswordDiv').addClass('has-warning');
-            $('#registerBtn').prop('disabled', true);;
+            $('#loseBtn').prop('disabled', true);;
         } else {
             // input is valid -- reset the error message
             $('#password2prompt').text('');
             $('#iPasswordDiv').removeClass('has-warning');
             $('#re-iPasswordDiv').removeClass('has-warning');
-            $('#registerBtn').prop('disabled', false);;
+            $('#loseBtn').prop('disabled', false);;
         }
     }
-</script>
+    </script>
         </div>
-        <button type="submit" class="btn btn-primary btn-lg" id="registerBtn" name="register" disabled>注册</button>
+        <button type="submit" class="btn btn-primary btn-lg" id="loseBtn" name="lose" disabled>修改密码</button>
       </div>
     </form>
   </div>
 
-  <div class="<?= $pageLayout['showRegMsgOrNot'] ?>">
+  <div class="<?= $pageLayout['showLoseMsgOrNot'] ?>">
 
     <?php if($pageLayout['has-warning'] === false) { ?>
-    <a class="btn btn-link btn-lg" href="index.html" role="button"><?= $pageLayout['retMsg'] ?>登录</a>
+    <a class="btn btn-link btn-lg" href="index.html" role="button"><?= $pageLayout['loseMsg'] ?>登录</a>
     <?php } else {?>
-    <a class="btn btn-link btn-lg" href="register.php" role="button"><?= $pageLayout['retMsg'] ?>注册</a>
+    <a class="btn btn-link btn-lg" href="lose.php" role="button"><?= $pageLayout['loseMsg'] ?>找回密码</a>
     <?php } ?>
   </div>
 

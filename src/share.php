@@ -25,17 +25,30 @@ if(validateUserFileOwnership($uid, $fid, $sha256)) {
   $enc_key = base64_encode(openssl_random_pseudo_bytes(Config::$symmetricEncKeyLen)); // 对称加密秘钥，应妥善保存
   $enc_key_in_db = encryptFile($enc_key, $shareKey, 'enckey'); // TODO 保存到数据库中的已加密的分享文件加密秘钥
   $encryptedFile = encryptFile($decrypted_content, $enc_key, $filename);
+# 对密文encryptedFile和随机数nonce进行数字签名----防止重放攻击？好像不需要防止重放
+  //所以只对密文进行数字签名
+  // $encryptfilehash = hash_file('sha256', $encryptedFile);
+  $privkey = openssl_pkey_get_private($_SESSION['privkey'], $_SESSION['passphrase']);
+  openssl_sign($encryptedFile, $signature, $privkey, OPENSSL_ALGO_SHA256);
+  
+  // $signatureFile = 
+  // $encryptedFilewithSign = $encryptedFile . "###HASHVALUE:" . $signature;
+  // $encryptedFilewithSign = array("encryptedfile" => $encryptedFile, "signature" => $signature);
 
   $shareFilePath = getShareFilePath($uid, $sha256);
 
   $shareFileRoot = dirname($shareFilePath);
+  $file = pathinfo($shareFilePath);
+  $signatureFile = $shareFileRoot . "/" . $file['filename'] . "-sign.enc";
+  file_put_contents($signatureFile, $signature);
 
   if(!is_dir($shareFileRoot)) {
     mkdir($shareFileRoot, 0755, true);
   }
-
+// var_dump($_SESSION['pubkey']);
   if(file_put_contents($shareFilePath, $encryptedFile) !== false) { // 分享的文件单独加密存储在区别于用户上传目录的另一个目录
     $ret = saveShareFileInfo($fid, $shareKeyHash, $enc_key_in_db, $shareFilePath, $nonce); // 文件分享信息保存到数据库
+
     debug_log($ret, __FILE__, __LINE__);
     if(empty($err)) {
       $params = generateShareLink($fid, $sha256, $expire_hours, $allowed_download_count, $nonce);
@@ -51,4 +64,3 @@ if(validateUserFileOwnership($uid, $fid, $sha256)) {
 }
 
 echo json_encode($ret);
-

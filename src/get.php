@@ -1,5 +1,5 @@
 <?php
-
+session_start();
 require 'get.bo.php';
 
 $fid    = empty($_GET['id']) ? '' : $_GET['id'];
@@ -9,11 +9,17 @@ $count  = empty($_GET['count']) ? '' : $_GET['count'];
 $nonce  = empty($_GET['nonce']) ? '' : $_GET['nonce'];
 $token  = empty($_GET['token']) ? '' : $_GET['token'];
 
+//file_put_contents('/tmp/test.log',"XXXXX".PHP_EOL,FILE_APPEND);
+//file_put_contents('/tmp/test.log',$signature.PHP_EOL,FILE_APPEND);
+//file_put_contents('/tmp/test.log',"XXXXX".PHP_EOL,FILE_APPEND);
+
+
+
 if(empty($_POST['access_code'])) {
 } else {
 
     $access_code = $_POST['access_code'];
-
+    
 }
 
 if(validateShareLink($fid, $key, $expire, $count, $token, $nonce)) {
@@ -32,6 +38,7 @@ if(validateShareLink($fid, $key, $expire, $count, $token, $nonce)) {
             echo $ret;
             return;
         }
+
 
         $fileInfoHtml = sprintf('%s 分享的 %s', $fileShareInfo['uname'], htmlspecialchars($fileShareInfo['fname']));
 
@@ -71,6 +78,7 @@ if(validateShareLink($fid, $key, $expire, $count, $token, $nonce)) {
           <input type="text" class="form-control" id="access_code" name="access_code" placeholder="请输入验证码" autofocus required maxlength="128">
         </div>
         <button type="submit" class="btn btn-primary btn-lg" name="login">确认下载</button>
+        <a class="btn btn-primary btn-lg" href='checkget.php?fid=$fid' >核验文件</a>
       </div>
     </form>
   </div>
@@ -84,35 +92,52 @@ HTML;
             echo $ret;
             exit();
         }
+        $encryptedFile = file_get_contents($fileShareInfo['filepath']);
 
+        $file = pathinfo($fileShareInfo['filepath']);
+        $signatureFile = $file['dirname'] . "/" . $file['filename'] . "-sign.enc";
+        $signature = file_get_contents($signatureFile); 
+        // //向CA中心请求公钥
+        $pub_key = openssl_get_publickey($fileShareInfo['pubkey']);
+        // $signaturewithname = strrpos($encryptedFileWithSign, "###HASHVALUE:");
+        // $signature = substr($encryptedFileWithSign, $signaturewithname + 13);
+        // $encryptedfile = substr($encryptedFileWithSign, 0, $signaturewithname);
+        // var_dump($encryptedFileWithSign);
         if(password_verify($access_code, $fileShareInfo['sharekey'])) {
             // 用户提供的access_code是正确的
-            $enc_key = decryptFile($fileShareInfo['enckey'], $access_code);
-            $decrypted_content = decryptFile($fileShareInfo['filepath'], $enc_key);
+            if(openssl_verify($encryptedFile, $signature, $pub_key, OPENSSL_ALGO_SHA256) === 1) {
+                $enc_key = decryptFile($fileShareInfo['enckey'], $access_code);
+                $decrypted_content = decryptFile($fileShareInfo['filepath'], $enc_key);
+                $_SESSION['content']=$decrypted_content;
+                file_put_contents('/tmp/test.log','====='.PHP_EOL,FILE_APPEND);
+                file_put_contents('/tmp/test.log',$decrypted_Get_sha256.PHP_EOL,FILE_APPEND);
+                if($decrypted_content === false) {
+                    $error = Prompt::$msg['decrypt_oops'];
+                }
 
-            if($decrypted_content === false) {
-                $error = Prompt::$msg['decrypt_oops'];
-            }
+                if(empty($error)) {
+                    updateDownloadCount($fid, $nonce);
+                    $filename = $fileShareInfo['fname'];
+                    $filesize = $fileShareInfo['size'];
+                    header('Content-Description: Decrypted File Download');
+                    header('Content-Disposition: attachment; filename="' . $filename . '"');
+                    header('Content-Transfer-Encoding: binary');
+                    header('Expires: 0');
+                    header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+                    header('Pragma: private');
+                    header('Content-Length: ' . $filesize); 
+                    ob_clean();
+                    flush();
 
-            if(empty($error)) {
-                updateDownloadCount($fid, $nonce);
-                $filename = $fileShareInfo['fname'];
-                $filesize = $fileShareInfo['size'];
-                header('Content-Description: Decrypted File Download');
-                header('Content-Disposition: attachment; filename="' . $filename . '"');
-                header('Content-Transfer-Encoding: binary');
-                header('Expires: 0');
-                header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-                header('Pragma: private');
-                header('Content-Length: ' . $filesize); 
-                ob_clean();
-                flush();
-
-                echo $decrypted_content;
-                exit();
+                    echo $decrypted_content;
+                    exit();
+                } else {
+                    $ret = Prompt::$msg['share_file_invalid_access_code']; 
+                }
             } else {
-                $ret = Prompt::$msg['share_file_invalid_access_code']; 
+                $ret = Prompt::$msg['download_verifysign_failed'];
             }
+
         } else {
             $ret = Prompt::$msg['share_file_invalid_access_code']; 
         }
