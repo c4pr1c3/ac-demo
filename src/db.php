@@ -11,7 +11,7 @@ function connectDb() {
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_PERSISTENT => true
     );
-    $conn = new PDO("mysql:host=$servername;dbname=$dbname;charset=$charset", $username, $password, $options);
+    $conn = @new PDO("mysql:host=$servername;dbname=$dbname;charset=$charset", $username, $password,$options);
     return $conn;
 }
 
@@ -29,17 +29,47 @@ function checkRegisterInDb($name) {
     }
 }
 
-function registerInDb($name, $password, $pubkey, $privkey) {
+function registerInDb($name, $password,$pin,$pubkey, $privkey) {
     try {
         $conn = connectDb();
-        $sql = "INSERT INTO users (name, password, pubkey, privkey) VALUES (:name, :password, :pubkey, :privkey)";
+        $sql = "INSERT INTO users (name, password, pin,pubkey, privkey) VALUES (:name, :password,:pin, :pubkey, :privkey)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':name', $name);
+        $stmt->bindParam(':password', $password);
+        $stmt->bindParam(':pin', $pin);
+        $stmt->bindParam(':pubkey', $pubkey);
+        $stmt->bindParam(':privkey', $privkey);
+        return $stmt->execute();
+
+    } catch(PDOException $e) {
+        throw $e;
+    }
+}
+
+function checkPinInDb($name) {//通过用户名得到这个pin码，pin码不存在即表明未注册
+    try {
+        $conn = connectDb();
+        $sql = "select pin from users where name=:name";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':name', $name);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return isset($result['pin']) ? $result['pin'] : '';
+    } catch(PDOException $e) {
+        throw $e;
+    }
+}
+
+function updatePassword($name,$password,$pubkey,$privkey){//修改对应用户名的密码和公私钥
+    try {
+        $conn = connectDb();
+        $sql = "update users set password = :password,pubkey=:pubkey,privkey=:privkey where name =:name";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':name', $name);
         $stmt->bindParam(':password', $password);
         $stmt->bindParam(':pubkey', $pubkey);
         $stmt->bindParam(':privkey', $privkey);
         return $stmt->execute();
-
     } catch(PDOException $e) {
         throw $e;
     }
@@ -58,6 +88,22 @@ function getUserInfoInDb($name) {
         throw $e;
     }
 }
+
+function getSha256InDb($fid){
+try {
+    $conn = connectDb();
+    $sql = "select sha256 from files where id=:fid";
+    $stmt = $conn->prepare($sql);
+    $stmt->bindParam(':fid', $fid);
+    $stmt->execute();
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    return isset($result['sha256']) ? $result['sha256'] : '';
+} catch(PDOException $e) {
+    throw $e;
+}
+}
+
+
 
 function uploadFileInDb($name, $size, $enckey, $sha256, $uid, $datetime) {
     try {
@@ -217,7 +263,7 @@ function saveShareFileInfoInDb($fid, $shareKeyHash, $enc_key_in_db, $shareFilePa
 function getFileShareInfoFromDb($fid, $nonce) {
     try {
         $conn = connectDb();
-        $sql = "select users.name as uname,pubkey, dcount, sharekey, share.enckey as enckey, filepath, files.name as fname, size from share left join files on share.fid=files.id left join users on files.uid=users.id where fid=:fid and nonce=:nonce";
+        $sql = "select users.name as uname, dcount, sharekey, share.enckey as enckey, filepath, files.name as fname,pubkey,sha256, size from share left join files on share.fid=files.id left join users on files.uid=users.id where fid=:fid and nonce=:nonce";
 
         $stmt = $conn->prepare($sql);
         $stmt->bindValue(':fid', (int)$fid, PDO::PARAM_INT);

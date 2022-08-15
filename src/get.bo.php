@@ -17,6 +17,12 @@ function validateShareLink($id, $sha256, $expire_ts, $count, $token, $nonce) {
 }
 
 
+
+
+    
+
+
+
 function getFileShareInfo($fid, $nonce) {
 
     return getFileShareInfoFromDb($fid, $nonce);

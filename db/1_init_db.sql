@@ -14,11 +14,12 @@ CREATE TABLE `files` (
 
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
-    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `id` int(11) NOT NULL  AUTO_INCREMENT,
     `name` varchar(255) NOT NULL,
     `password` char(60) NOT NULL,
+    `pin` int(11),
     `pubkey` text NOT NULL,
-    `privkey` text NOT NULL comment '使用用户明文的password作为私钥导出的passphrase',
+    `privkey` text NOT NULL,
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
 

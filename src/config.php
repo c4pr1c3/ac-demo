@@ -18,7 +18,7 @@ class Config {
                 '/[#?!@$%^&*-]+/', '口令需要至少一个特殊字符'
             )
         )
-     );
+    );
     public static $uploadRoot = "/srv/acdemo/upload";
     public static $shareRoot = "/srv/acdemo/share";
     public static $debugLogFile = '/tmp/cucCloudPan.log';

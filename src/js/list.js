@@ -155,5 +155,36 @@ function ajaxShare(obj) {
 	});
 }
 
+function ajaxCheck(obj) {
 
+	tr = $(obj.parentNode.parentNode);
+	console.log(tr);
+
+	fid  = tr.find('td')[0].innerText
+	filename = tr.find('td a')[0].innerText;
+
+	if(!confirm('要核验文件 ' + filename + ' 的完整性，请确保最近一次操作为下载该文件到本地！')) {
+		return;
+	}
+	$.ajax({
+        type: "POST",
+        url: "check.php",
+        data: { 'fid': fid },
+		dataType: 'json',
+    success: function (data) {
+		if(data['error']){
+			alert (filename +"核验完整性失败，文件被破坏！")
+		
+	}
+		else{
+			
+			alert (filename +"核验完整性成功，文件完整！")
+		}
+		},
+        error: function () 
+		{
+			alert (filename +"核验完整性失败，请稍后再试！")
+        }
+    });
+}
 

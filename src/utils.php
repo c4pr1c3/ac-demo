@@ -28,6 +28,7 @@ $dn = array(
     "organizationName" => "CUC",
     "organizationalUnitName" => "CS",
     "commonName" => "$userName",  // https应用务必确保和你要使用的站点域名匹配
+    "emailAddress" => "$userName"
 );
 
 $pk_config = array(
@@ -185,3 +186,4 @@ function getUriRoot() {
 
     return $uriRoot;
 }
+
